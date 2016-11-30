@@ -1,7 +1,4 @@
-# VS Code Node Debug
-
-[![build status](https://travis-ci.org/Microsoft/vscode-node-debug.svg?branch=master)](https://travis-ci.org/Microsoft/vscode-node-debug)
-[![build status](https://ci.appveyor.com/api/projects/status/t74psolxi3k7bcjp/branch/master?svg=true)](https://ci.appveyor.com/project/weinand/vscode-node-debug)
+# VS Code Bazis Debug
 
 This repository contains the debug extension for [node.js](https://nodejs.org) that ships with [VS Code](https://code.visualstudio.com).
 
