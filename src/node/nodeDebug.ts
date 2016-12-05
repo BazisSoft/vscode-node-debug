@@ -648,8 +648,7 @@ export class NodeDebugSession extends DebugSession {
 			if (this._restartMode && !this._inShutdown) {
 				this.sendEvent(new TerminatedEvent(true));
 			} else {
-				////i think, it terminates process
-				//this.sendEvent(new TerminatedEvent());
+				this.sendEvent(new TerminatedEvent());
 			}
 		}
 	}
@@ -718,6 +717,21 @@ export class NodeDebugSession extends DebugSession {
 
 		this._noDebug = (typeof args.noDebug === 'boolean') && args.noDebug;
 
+		if (typeof args.console === 'string') {
+			switch (args.console) {
+				case 'internalConsole':
+				case 'integratedTerminal':
+				case 'externalTerminal':
+					this._console = args.console;
+					break;
+				default:
+					this.sendErrorResponse(response, 2028, localize('VSND2028', "Unknown console type '{0}'.", args.console));
+					return;
+			}
+		} else if (typeof args.externalConsole === 'boolean' && args.externalConsole) {
+			this._console = 'externalTerminal';
+		}
+
 		const port = args.port || random(3000, 50000);
 
 		let runtimeExecutable = args.runtimeExecutable;
@@ -743,6 +757,27 @@ export class NodeDebugSession extends DebugSession {
 		const programArgs = args.args || [];
 
 		// special code for 'extensionHost' debugging
+		if (this._adapterID === 'extensionHost') {
+
+			// we always launch in 'debug-brk' mode, but we only show the break event if 'stopOnEntry' attribute is true.
+			let launchArgs = [ runtimeExecutable ];
+			if (!this._noDebug) {
+				launchArgs.push(`--debugBrkPluginHost=${port}`);
+			}
+			launchArgs = launchArgs.concat(runtimeArgs, programArgs);
+
+			this._sendLaunchCommandToConsole(launchArgs);
+
+			const cmd = CP.spawn(runtimeExecutable, launchArgs.slice(1));
+			cmd.on('error', (err) => {
+				this._terminated(`failed to launch extensionHost (${err})`);
+			});
+			this._captureOutput(cmd);
+
+			// we are done!
+			this.sendResponse(response);
+			return;
+		}
 
 
 		let programPath = args.program;
@@ -765,24 +800,6 @@ export class NodeDebugSession extends DebugSession {
 
 		if (programPath) {
 			if (NodeDebugSession.isJavaScript(programPath)) {
-				if (this._sourceMaps) {
-					// if programPath is a JavaScript file and sourceMaps are enabled, we don't know whether
-					// programPath is the generated file or whether it is the source (and we need source mapping).
-					// Typically this happens if a tool like 'babel' or 'uglify' is used (because they both transpile js to js).
-					// We use the source maps to find a 'source' file for the given js file.
-					this._sourceMaps.MapPathFromSource(programPath).then(generatedPath => {
-						if (generatedPath && generatedPath !== programPath) {
-							// programPath must be source because there seems to be a generated file for it
-							this.log('sm', `launchRequest: program '${programPath}' seems to be the source; launch the generated file '${generatedPath}' instead`);
-							programPath = generatedPath;
-						} else {
-							this.log('sm', `launchRequest: program '${programPath}' seems to be the generated file`);
-						}
-						this.launchRequest2(response, args, programPath, programArgs, <string> runtimeExecutable, runtimeArgs, port);
-					});
-					return;
-				}
-			} else if (NodeDebugSession.isJavaScript(programPath)){
 				if (this._sourceMaps) {
 					// if programPath is a JavaScript file and sourceMaps are enabled, we don't know whether
 					// programPath is the generated file or whether it is the source (and we need source mapping).
@@ -864,8 +881,28 @@ export class NodeDebugSession extends DebugSession {
 		let envVars = args.env;
 
 		// read env from disk and merge into envVars
+		if (args.envFile) {
+			try {
+				const buffer = FS.readFileSync(args.envFile, 'utf8');
+				const env = {};
+				buffer.split('\n').forEach( line => {
+					const r = line.match(/^\s*([\w\.\-]+)\s*=\s*(.*)?\s*$/);
+					if (r !== null) {
+						let value = r[2] || '';
+						if (value.length > 0 && value.charAt(0) === '"' && value.charAt(value.length-1) === '"') {
+							value = value.replace(/\\n/gm, '\n');
+						}
+						env[r[1]] = value.replace(/(^['"]|['"]$)/g, '');
+					}
+				});
+				envVars = PathUtils.extendObject(env, args.env); // launch config env vars overwrite .env vars
+			} catch (e) {
+				this.sendErrorResponse(response, 2029, localize('VSND2029', "Can't load environment variables from file ({0}).", '{_error}'), { _error: e.message });
+				return;
+			}
+		}
 
-		if (this._supportsRunInTerminalRequest) {
+		if (this._supportsRunInTerminalRequest && (this._console === 'externalTerminal' || this._console === 'integratedTerminal')) {
 
 			const termArgs : DebugProtocol.RunInTerminalRequestArguments = {
 				kind: this._console === 'integratedTerminal' ? 'integrated' : 'external',
@@ -3554,13 +3591,6 @@ export class NodeDebugSession extends DebugSession {
 	}
 
 	//---- private static ---------------------------------------------------------------
-	private static isTypeScript(path: string): boolean {
-		const name = Path.basename(path).toLowerCase();
-		if (endsWith(name, '.ts')) {
-			return true;
-		}
-		return false;
-	}
 
 	private static isJavaScript(path: string): boolean {
 
