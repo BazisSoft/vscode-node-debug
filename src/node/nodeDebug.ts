@@ -306,7 +306,6 @@ export class NodeDebugSession extends DebugSession {
 	private static PREVIEW_MAX_STRING_LENGTH = 50;	// truncate long strings for object/array preview
 
 	private static NODE = 'node';
-	private static Bazis10 = 'Bazis10';
 	private static DUMMY_THREAD_ID = 1;
 	private static DUMMY_THREAD_NAME = 'Node';
 	private static FIRST_LINE_OFFSET = 62;
@@ -3645,29 +3644,6 @@ export class NodeDebugSession extends DebugSession {
 			return s.substring(1, s.length - 1);
 		}
 		return s;
-	}
-
-	private static killTree(processId: number): void {
-
-		if (process.platform === 'win32') {
-			const TASK_KILL = 'C:\\Windows\\System32\\taskkill.exe';
-
-			// when killing a process in Windows its child processes are *not* killed but become root processes.
-			// Therefore we use TASKKILL.EXE
-			try {
-				CP.execSync(`${TASK_KILL} /F /T /PID ${processId}`);
-			}
-			catch (err) {
-			}
-		} else {
-
-			// on linux and OS X we kill all direct and indirect child processes as well
-			try {
-				const cmd = Path.join(__dirname, './terminateProcess.sh');
-				CP.spawnSync(cmd, [ processId.toString() ]);
-			} catch (err) {
-			}
-		}
 	}
 }
 
