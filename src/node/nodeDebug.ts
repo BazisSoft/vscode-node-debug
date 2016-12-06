@@ -802,7 +802,7 @@ export class NodeDebugSession extends DebugSession {
 		runtimeArgs = args.runtimeArgs || [];
 
 		if (programPath) {
-			if (NodeDebugSession.isJavaScript(programPath) || NodeDebugSession.isTypeScript(programPath)) {
+			if (NodeDebugSession.isJavaScript(programPath)) {
 				if (this._sourceMaps) {
 					// if programPath is a JavaScript file and sourceMaps are enabled, we don't know whether
 					// programPath is the generated file or whether it is the source (and we need source mapping).
@@ -818,6 +818,11 @@ export class NodeDebugSession extends DebugSession {
 						}
 						this.launchRequest2(response, args, programPath, programArgs, <string> runtimeExecutable, runtimeArgs, port);
 					});
+					return;
+				}
+			} else if (NodeDebugSession.isTypeScript(programPath)){
+				if (this._sourceMaps) {
+					this.launchRequest2(response, args, programPath, programArgs, <string> runtimeExecutable, runtimeArgs, port);
 					return;
 				}
 			} else {
