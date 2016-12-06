@@ -306,6 +306,7 @@ export class NodeDebugSession extends DebugSession {
 	private static PREVIEW_MAX_STRING_LENGTH = 50;	// truncate long strings for object/array preview
 
 	private static NODE = 'node';
+	private static Bazis10 = 'Bazis10';
 	private static DUMMY_THREAD_ID = 1;
 	private static DUMMY_THREAD_NAME = 'Node';
 	private static FIRST_LINE_OFFSET = 62;
@@ -750,7 +751,9 @@ export class NodeDebugSession extends DebugSession {
 				this.sendErrorResponse(response, 2001, localize('VSND2001', "Cannot find runtime '{0}' on PATH.", '{_runtime}'), { _runtime: NodeDebugSession.NODE });
 				return;
 			}
-			runtimeExecutable = NodeDebugSession.NODE;     // use node from PATH
+			//TODO: get exePath from Windows registry
+			let exePath = 'D:\\Bazis10\\Bin\\Bazis10.exe'
+			runtimeExecutable = exePath;
 		}
 
 		let runtimeArgs = args.runtimeArgs || [];
@@ -796,10 +799,10 @@ export class NodeDebugSession extends DebugSession {
 			}
 		}
 
-		runtimeArgs = args.runtimeArgs || [ '--nolazy' ];
+		runtimeArgs = args.runtimeArgs || [];
 
 		if (programPath) {
-			if (NodeDebugSession.isJavaScript(programPath)) {
+			if (NodeDebugSession.isJavaScript(programPath) || NodeDebugSession.isTypeScript(programPath)) {
 				if (this._sourceMaps) {
 					// if programPath is a JavaScript file and sourceMaps are enabled, we don't know whether
 					// programPath is the generated file or whether it is the source (and we need source mapping).
@@ -844,25 +847,7 @@ export class NodeDebugSession extends DebugSession {
 		let program: string | undefined;
 		let workingDirectory = args.cwd;
 
-		if (workingDirectory) {
-			if (!Path.isAbsolute(workingDirectory)) {
-				this.sendRelativePathErrorResponse(response, 'cwd', workingDirectory);
-				return;
-			}
-			if (!FS.existsSync(workingDirectory)) {
-				this.sendNotExistErrorResponse(response, 'cwd', workingDirectory);
-				return;
-			}
-			// if working dir is given and if the executable is within that folder, we make the executable path relative to the working dir
-			if (programPath) {
-				program = Path.relative(workingDirectory, programPath);
-			}
-		}
-		else if (programPath) {	// should not happen
-			// if no working dir given, we use the direct folder of the executable
-			workingDirectory = Path.dirname(programPath);
-			program = Path.basename(programPath);
-		}
+		program = programPath;
 
 		// we always break on entry (but if user did not request this, we will not stop in the UI).
 		let launchArgs = [ runtimeExecutable ];
@@ -3592,10 +3577,18 @@ export class NodeDebugSession extends DebugSession {
 
 	//---- private static ---------------------------------------------------------------
 
+	private static isTypeScript(path: string): boolean {
+		const name = Path.basename(path).toLowerCase();
+		if (endsWith(name, '.ts')) {
+			return true;
+		}
+		return false;
+	}
+
 	private static isJavaScript(path: string): boolean {
 
 		const name = Path.basename(path).toLowerCase();
-		if (endsWith(name, '.js') || endsWith(name, '.ts')) {
+		if (endsWith(name, '.js')) {
 			return true;
 		}
 
