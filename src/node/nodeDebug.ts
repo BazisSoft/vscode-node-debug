@@ -1391,13 +1391,8 @@ export class NodeDebugSession extends DebugSession {
 				// stop socket connection (otherwise node.js dies with ECONNRESET on Windows)
 				this._node.stop();
 
-				// kill the whole process tree by starting with the node process
-				let pid = this._nodeProcessId;
-				if (pid > 0) {
-					this._nodeProcessId = -1;
-					this.log('la', 'shutdown: kill debugee and sub-processes');
-					NodeDebugSession.killTree(pid);
-				}
+				//there was code that kills whole process tree
+				//but it was removed because it kill process that was launched outside VSCode;
 			}
 
 			// plan for shutting down this process after a delay of 100ms
