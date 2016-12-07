@@ -152,23 +152,11 @@ function listProcesses() : Promise<ProcessItem[]> {
 
 const initialConfigurations = [
 	{
-		"type": "bazis",
-        "request": "launch",
-		"name": "Запустить программу",
-		"program": "${file}"
-	},
-	{
-		type: 'node',
-		request: 'launch',
+		type: 'bazis',
+		reques: 'launch',
 		name: localize('bazis.launch.config.name', "Launch Program"),
-		program: join('${workspaceRoot}', 'app.js'),
-		cwd: '${workspaceRoot}'
-	},
-	{
-		type: 'node',
-		request: 'attach',
-		name: localize('bazis.attach.config.name', "Attach to Process"),
-		port: 5858
+		sourceMaps: true,
+		program: '${file}'
 	}
 ];
 
