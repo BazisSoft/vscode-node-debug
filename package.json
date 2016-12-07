@@ -62,7 +62,8 @@
     "vsce": "^1.17.0",
     "vscode": "^1.0.3",
     "vscode-debugadapter-testsupport": "^1.14.0",
-    "vscode-nls-dev": "^2.0.1"
+    "vscode-nls-dev": "^2.0.1",
+    "winreg": "^1.2.2"
   },
   "main": "./out/node/extension",
   "activationEvents": [

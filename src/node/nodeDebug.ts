@@ -25,6 +25,7 @@ import * as URL from 'url';
 import * as Path from 'path';
 import * as FS from 'fs';
 import * as nls from 'vscode-nls';
+import * as Registry from 'winreg';
 
 const localize = nls.config(process.env.VSCODE_NLS_CONFIG)();
 
@@ -306,6 +307,7 @@ export class NodeDebugSession extends DebugSession {
 	private static PREVIEW_MAX_STRING_LENGTH = 50;	// truncate long strings for object/array preview
 
 	private static NODE = 'node';
+	private static BazisVersion = 'Bazis10';
 	private static DUMMY_THREAD_ID = 1;
 	private static DUMMY_THREAD_NAME = 'Node';
 	private static FIRST_LINE_OFFSET = 62;
@@ -379,6 +381,7 @@ export class NodeDebugSession extends DebugSession {
 	private _smartStepCount = 0;
 	private _catchRejects = false;
 	private _disableSkipFiles = false;
+	private exePath = '';			//path to Bazis exe file
 
 	public constructor() {
 		super();
@@ -707,9 +710,26 @@ export class NodeDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
+	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
+		let regKey = new Registry({
+			hive: Registry.HKCU,
+			key:  '\\Software\\BazisSoft\\' + NodeDebugSession.BazisVersion
+			})
+		regKey.values( (err, items) => {
+			if (!err)
+				for (var i=0; i<items.length; i++){
+					if (items[i].name === 'Path'){
+						this.exePath = items[i].value;
+						break;
+					}
+				}
+			this.internalLaunchRequest(response, args);
+		});
+	}
+
 	//---- launch request -----------------------------------------------------------------------------------------------------
 
-	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
+	private internalLaunchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
 
 		if (this._processCommonArgs(response, args)) {
 			return;
@@ -750,9 +770,16 @@ export class NodeDebugSession extends DebugSession {
 				this.sendErrorResponse(response, 2001, localize('VSND2001', "Cannot find runtime '{0}' on PATH.", '{_runtime}'), { _runtime: NodeDebugSession.NODE });
 				return;
 			}
-			//TODO: get exePath from Windows registry
-			let exePath = 'D:\\Bazis10\\Bin\\Bazis10.exe'
-			runtimeExecutable = exePath;
+
+			if (this.exePath === ''){
+				this.sendErrorResponse(response, 2001, localize('VSND2001', "Cannot find runtime '{0}' on PATH.", '{_runtime}'), { _runtime: NodeDebugSession.BazisVersion })
+				return;
+			} else if (!FS.existsSync(this.exePath)) {
+				this.sendNotExistErrorResponse(response, 'runtimeExecutable', this.exePath);
+				return;
+			}
+
+			runtimeExecutable = this.exePath;
 		}
 
 		let runtimeArgs = args.runtimeArgs || [];
