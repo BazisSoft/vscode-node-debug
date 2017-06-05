@@ -62,9 +62,7 @@ export namespace bazForms {
 			this.args.push(arg);
 		}
 		PushChange(change: ParsedBase) {
-			if (change.Modified() && !this.Modified()) {
-				this.state = ChangeState.Modified;
-			}
+			this.Modify();
 			this.args.push(change);
 		}
 	}
@@ -78,8 +76,8 @@ export namespace bazForms {
 		value: string;
 	}
 
-	class ParsedReference extends ParsedBase{
-		constructor(name: string | undefined, state?: ChangeState){
+	class ParsedReference extends ParsedBase {
+		constructor(name: string | undefined, state?: ChangeState) {
 			super(name, ParsedKind.Reference, state);
 		}
 		ref?: string[];
@@ -100,12 +98,12 @@ export namespace bazForms {
 		// calls: Array<ParsedFunction> = [];
 
 		PushChange(change: ParsedBase) {
-			if (change.Modified() && this.state === ChangeState.None) {
-				this.state = ChangeState.Modified;
-			}
-			//maybe it won't need
+			// if (change.Modified() && this.state === ChangeState.None) {
+			// 	this.state = ChangeState.Modified;
+			// }
+			// //maybe it won't need
 			// if (change.Modified())
-			// 	this.Modify();
+			this.Modify();
 			switch (change.kind) {
 				// case ParsedKind.Value:
 				// case ParsedKind.Object: {
@@ -174,25 +172,41 @@ export namespace bazForms {
 		}
 	}
 
+	export function VariableInForm(variable: ParsedBase, form: FormChange): boolean {
+		let fullname: string[] = [];
+		switch (variable.kind) {
+			case ParsedKind.FormComponent: {
+				let comp = <ParsedComponent>variable;
+				fullname = comp.compOwner || [];
+				break;
+			}
+			case ParsedKind.Object: {
+				fullname = (<ParsedObject>variable).owner || [];
+			}
+			case ParsedKind.Value: {
+				fullname = (<ParsedValue>variable).owner || [];
+			}
+			case ParsedKind.Function:{
+				fullname = (<ParsedFunction>variable).owner || [];
+			}
+		}
+		if (fullname.length === 0)
+			return false;
+		for (let i = 0; i < form.length; i++) {
+			if (bzConsts.NamesEqual(fullname, form[i].GetFullName()))
+				return true;
+		}
+		return false;
+	}
+
+	export class FormChange extends Array<ParsedBase>{
+
+	}
+
 	export class Forms extends ParsedBase {
 		variables: Array<ParsedBase> = [];
 		PushChange(change: ParsedBase) {
 			this.variables.push(change);
-			// switch (change.kind) {
-			// 	case ParsedKind.Value:
-			// 	case ParsedKind.Object:
-			// 	case ParsedKind.Function: {
-			// 		this.variables.push(change);
-			// 		break;
-			// 	}
-			// 	case ParsedKind.Form: {
-			// 		this.variables.push(change);
-			// 		break;
-			// 	}
-			// 	default: {
-			// 		throw new Error(`PushChange: cannot push change with kind ${change.kind} into ${typeof this}`);
-			// 	}
-			// }
 		}
 		FindOwner(fullname: string[]): ParsedBase | undefined {
 			let result: ParsedBase | undefined;
@@ -213,6 +227,30 @@ export namespace bazForms {
 					result.push(variable.GetFullName().join('.'))
 			})
 			return result
+		}
+		// GetFormUpdate(formName: string[]): ParsedForm{
+		// 	let vars = this.variables;
+		// 	for (let i = 0; i < vars.length; i ++){
+		// 		let variable = vars[i];
+		// 		if (bzConsts.NamesEqual(variable.GetFullName(), formName))
+		// 			return <ParsedForm>variable;
+		// 	}
+		// 	throw new Error(`cannot find form '${formName.join('.')}'`);
+		// }
+
+		GetFormUpdate(formName: string[]): FormChange {
+			let result = new FormChange();
+			this.variables.forEach(variable => {
+				if (bzConsts.NamesEqual(variable.GetFullName(), formName)) {
+					result.push(variable);
+				}
+				else {
+					if (VariableInForm(variable, result)) {
+						result.push(variable);
+					}
+				}
+			})
+			return result;
 		}
 	}
 
@@ -249,6 +287,9 @@ export namespace bazForms {
 		let oldFunc = <bazCode.FunctionInfo>oldObj;
 		let newFunc = <bazCode.FunctionInfo>newObj;
 		let result = new ParsedFunction(newFunc.name, oldFunc ? ChangeState.None : ChangeState.Created);
+		if (newFunc.owner){
+			result.owner = newFunc.owner.GetFullName();
+		}
 		let oldArgs = oldFunc ? oldFunc.args : undefined;
 		CompareVariableArrays(oldArgs, newFunc.args, result);
 		if (owner)
@@ -295,7 +336,7 @@ export namespace bazForms {
 			newComp.type = init.name;
 			newComp.owner = newObj.owner ? newObj.owner.GetFullName() : undefined;
 			if (init.owner) {
-				newComp.compOwner = init.owner.GetFullName();
+				newComp.compOwner = init.owner.GetFullName(true);
 			}
 			let oldInit: bazCode.ObjectInfo | undefined;
 			if (oldObj)
@@ -401,7 +442,7 @@ export namespace bazForms {
 								newChange = new ParsedReference(newObj.name, ChangeState.Modified);
 							}
 						}
-						if (newChange){
+						if (newChange) {
 							(<ParsedReference>newChange).ref = newObj.refersTo.GetFullName();
 						}
 						if (newChange && newObj.owner) {

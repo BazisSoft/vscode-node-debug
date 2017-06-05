@@ -1,5 +1,17 @@
 export namespace bzConsts {
 
+	export function NamesEqual(name1: string[], name2: string[]): boolean {
+		let result = name1.length === name2.length;
+		if (result) {
+			for (let i = 0; i < name1.length; i++) {
+				if (name1[i] !== name2[i])
+					return false;
+			}
+		}
+		return result;
+	}
+
+
 	export const Constructors = {
 		NewForm: 'NewForm',
 		NewButton: 'NewButton',

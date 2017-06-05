@@ -261,17 +261,6 @@ export namespace bazCode {
 				this.AddVar(item);
 			}
 		}
-
-		NamesEqual(name1: string[], name2: string[]): boolean {
-			let result = name1.length === name2.length;
-			if (result) {
-				for (let i = 0; i < name1.length; i++) {
-					if (name1[i] !== name2[i])
-						return false;
-				}
-			}
-			return result;
-		}
 		/**
 		 * find variable by FULL name
 		 * @param fullName splitted full object name like ['OwnerName', 'Name']
@@ -279,7 +268,7 @@ export namespace bazCode {
 		public FindVariable(fullName: string[], createIfNotFound: boolean): ObjectInfo {
 			for (let i = 0; i < this.variables.length; i++) {
 				let variable = this.variables[i];
-				if (this.NamesEqual(variable.GetFullName(), fullName)) {
+				if (bzConsts.NamesEqual(variable.GetFullName(), fullName)) {
 					return variable;
 				}
 			}
@@ -317,7 +306,7 @@ export namespace bazCode {
 
 			for (let i = 0; i < this.variables.length; i++) {
 				let variable = this.variables[i];
-				if (this.NamesEqual(variable.GetFullName(), fullName) && variable instanceof FunctionInfo) {
+				if (bzConsts.NamesEqual(variable.GetFullName(), fullName) && variable instanceof FunctionInfo) {
 					return variable.Copy(variable.source);
 				}
 			}

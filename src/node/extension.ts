@@ -151,7 +151,7 @@ function sendMessage(client: Net.Socket, msg: string) {
 	}
 }
 
-function RunFormEditor(formInfo?: bazForms.ParsedForm) {
+function RunFormEditor(formInfo?: bazForms.FormChange) {
 	if (!formOpened) {
 		if (formEditorPath) {
 			formEditorProcess = cp.spawn(formEditorPath, ['--port', socketPort.toString()]);
@@ -221,10 +221,10 @@ function StringifyCircular(obj): string {
 			if (cache.indexOf(value) !== -1) {
 				// Circular reference found, discard key
 				let additionalInfo = '';
-				if (value instanceof bazCode.ObjectInfo){
+				if (value instanceof bazCode.ObjectInfo) {
 					additionalInfo = value.GetFullName().join('.');
 				}
-				return `circular${additionalInfo? ': ' + additionalInfo: ''}`;
+				return `circular${additionalInfo ? ': ' + additionalInfo : ''}`;
 			}
 			// Store value in our collection
 			cache.push(value);
@@ -265,7 +265,7 @@ function updateSource(src: ts.SourceFile) {
 						break;
 					}
 				}
-				if (newForm){
+				if (newForm) {
 					let updates = bazForms.CompareForms(form, newForm, logSessionError);
 					if (updates)
 						UpdateFormEditor(updates);
@@ -388,7 +388,7 @@ function transformInMessage(data: Buffer) {
 
 }
 
-function ShowFormEditor(form: bazForms.ParsedForm) {
+function ShowFormEditor(form: bazForms.FormChange) {
 
 	let message = {
 		type: OutMessageType.FormInfo,
@@ -494,17 +494,12 @@ function openFormEditor() {
 			vscode.window.showQuickPick(formNames, {
 				placeHolder: 'Выберите имя формы'
 			}).then((value: string) => {
-				if (!value)
-					return;
-				// let index = formNames.indexOf(value);
-				// if (index >= 0) {
-				// 	let formInfo = forms[index];
-				// 	if (formInfo) {
-				// 		currentFormName = value;
-				// 		currentFileName = fileName;
-				// 		RunFormEditor(formInfo);
-				// 	}
-				// }
+				let formInfo = forms.GetFormUpdate(value.split('.'));
+				if (formInfo) {
+					currentFormName = value;
+					currentFileName = fileName;
+					RunFormEditor(formInfo);
+				}
 			})
 		}
 		else
