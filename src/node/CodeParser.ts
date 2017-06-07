@@ -156,10 +156,10 @@ export namespace bazCode {
 		 * returns full name of object like 'OwnerName.Name'
 		 */
 		GetFullName(removeRef?: boolean): string[] {
-			if (removeRef && this._ref){
+			if (removeRef && this._ref) {
 				return this._ref.GetFullName();
 			}
-			else{
+			else {
 				let result: string[] = [];
 				if (this.owner) {
 					if (this.owner instanceof BaseInfo)
@@ -186,7 +186,7 @@ export namespace bazCode {
 				newInfo.refersTo = newInfo.source.FindVariable(this.refersTo.GetFullName(), false);
 			}
 			if (this.initializer) {
-				if (this.initializer.kind === InfoKind.FunctionInfo){
+				if (this.initializer.kind === InfoKind.FunctionInfo) {
 					newInfo.initializer = this.initializer.Copy(newInfo.source);
 				}
 				else
@@ -222,13 +222,27 @@ export namespace bazCode {
 				this.source.AddNewItem(item);
 			}
 		}
+		RelatedTo(objectFullName: string[]): boolean {
+			let fullname = this.GetFullName(true);
+			let result = bzConsts.IsOwner(fullname, objectFullName) ||
+				bzConsts.NamesEqual(fullname, objectFullName);
+			if (!result){
+				let initOwner = this.initializer? this.initializer.owner: undefined;
+				if (initOwner){
+					fullname = initOwner.GetFullName(true);
+					result = bzConsts.IsOwner(fullname, objectFullName) ||
+						bzConsts.NamesEqual(fullname, objectFullName);
+				}
+			}
+			return result;
+		}
 	}
 
 	export class FunctionInfo extends ObjectInfo {
 		args: Array<ObjectInfo> = [];
 		public Copy(src: SourceInfo): FunctionInfo {
 			let result = new FunctionInfo(this.name, src);
-			for (let i = 0; i < this.args.length; i ++){
+			for (let i = 0; i < this.args.length; i++) {
 				result.args.push(this.args[i].Copy(src));
 			}
 			if (this.owner) {
@@ -276,6 +290,7 @@ export namespace bazCode {
 				if (fullName.length > 1) {
 					let owner = this.FindVariable(fullName.slice(0, fullName.length - 1), createIfNotFound);
 					newObj.range = owner.range.Copy();
+					newObj.initRange = owner.initRange.Copy();
 					newObj.owner = owner;
 				}
 				this.variables.push(newObj);
@@ -324,7 +339,7 @@ export namespace bazCode {
 		Copy(): SourceInfo {
 			let result = new SourceInfo(this.name, this.range.Copy());
 			result.source = result;
-			for (let i = 0; i < this.variables.length; i ++){
+			for (let i = 0; i < this.variables.length; i++) {
 				result.variables.push(this.variables[i].Copy(result));
 			}
 			return result;
@@ -470,7 +485,12 @@ export namespace bazCode {
 		if (!info.source)
 			throw new ParseError(`info '${info.name}' doesn't have a source`);
 		let newObj = MakeObject(objName, info.source, new InfoRange(decl.pos, decl.end))
-		newObj.initRange = GetFullInitRange(decl);
+		if (decl.parent && decl.parent.kind === ts.SyntaxKind.VariableDeclarationList &&
+			(<ts.VariableDeclarationList>decl.parent).declarations.length === 1) {
+			newObj.initRange = GetFullInitRange(decl.parent);
+		}
+		else
+			newObj.initRange = GetFullInitRange(decl);
 		parseInitializer(decl.initializer, newObj);
 		newObj.initialized = true;
 		info.AddNewItem(newObj);
@@ -826,5 +846,37 @@ export namespace bazCode {
 		}
 		return result;
 	}
+
+
+	interface DeleteCompMessage {
+		fullname: string;
+	}
+
+	export function DeleteComponent(msg: any, parsedSource: SourceInfo): Array<TextChange> {
+		let result = new Array<TextChange>();
+		let compname = (<DeleteCompMessage>msg).fullname;
+		let names = [compname.split('.')];
+		let compRanges = new Array<InfoRange>();
+		parsedSource.variables.forEach(value => {
+			for (let i = 0; i < names.length; i++) {
+				if (value.RelatedTo(names[i])) {
+					compRanges.push(value.initRange);
+					if (value.kind === InfoKind.ObjectInfo){
+						names.push(value.GetFullName(true));
+					}
+					break;
+				}
+			}
+		})
+		compRanges.forEach(range => {
+			let change = new TextChange();
+			change.pos = range.pos;
+			change.end = range.end;
+			change.newText = '';
+			result.push(change);
+		})
+		return result;
+	}
+
 
 }

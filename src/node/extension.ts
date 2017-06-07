@@ -93,7 +93,8 @@ const OutMessageType = {
 }
 const InMessageType = {
 	NewComponent: 'newcomponent',
-	ComponentsChanges: 'componentschanges'
+	ComponentsChanges: 'componentschanges',
+	DeleteComponent: 'deletecomponent'
 }
 
 const FormEditorFileName = 'FormEditor.exe';
@@ -280,6 +281,15 @@ function pushInMessage(msg: string) {
 			}
 			break;
 		}
+		case InMessageType.DeleteComponent:{
+			for (let i = 0; i < message.length; i ++){
+				let deletions = bazCode.DeleteComponent(message[i], parsedSource);
+				deletions.forEach(deletion =>{
+					newChanges.push(MakeTextEdit(doc, deletion));
+				})
+			}
+			break;
+		}
 	}
 	if (newChanges.length === 0) {
 		logSessionError(`In message cannot be parsed. Full message: ${msg}\n`);
@@ -342,19 +352,19 @@ function transformInMessage(data: Buffer) {
 
 }
 
-function ShowFormEditor(form: bazForms.FormChange) {
+// function ShowFormEditor(form: bazForms.FormChange) {
 
-	let message = {
-		type: OutMessageType.FormInfo,
-		info: form,
-		filename: currentFileName
-	}
-	let stringMsg = JSON.stringify(message);
-	sendMessage(client, stringMsg);
-	SessionLog('OutMessage: ' + stringMsg);
-}
+// 	let message = {
+// 		type: OutMessageType.FormInfo,
+// 		info: form,
+// 		filename: currentFileName
+// 	}
+// 	let stringMsg = JSON.stringify(message);
+// 	sendMessage(client, stringMsg);
+// 	SessionLog('OutMessage: ' + stringMsg);
+// }
 
-function UpdateFormEditor(newInfo/*: bazForms.ComponentChanges*/) {
+function UpdateFormEditor(newInfo: bazForms.FormChange) {
 	let message = {
 		type: OutMessageType.UpdateInfo,
 		info: newInfo,

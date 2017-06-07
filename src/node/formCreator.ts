@@ -142,6 +142,13 @@ export namespace bazForms {
 		return false;
 	}
 
+	function RemoveNonModified(form: FormChange){
+		for (let i = form.length - 1; i > -1; i--){
+			if (!form[i].Modified())
+				form.splice(i, 1);
+		}
+	}
+
 	export class FormChange extends Array<ParsedBase>{
 
 	}
@@ -184,20 +191,21 @@ export namespace bazForms {
 					}
 				}
 			})
+			RemoveNonModified(result);
 			return result;
 		}
 	}
 
-	function SpliceVariable(oldVar: bazCode.BaseInfo, newArr: Array<bazCode.BaseInfo>): bazCode.BaseInfo | undefined {
+	function SpliceVariable(oldVar: bazCode.ObjectInfo, newArr: Array<bazCode.ObjectInfo>): bazCode.BaseInfo | undefined {
 		if (oldVar)
 			for (let i = 0; i < newArr.length; i++) {
-				if (newArr[i].name === oldVar.name)
+				if (bzConsts.NamesEqual(newArr[i].GetFullName(), oldVar.GetFullName()))
 					return newArr.splice(i, 1)[0];
 			}
 		return undefined;
 	}
 
-	function CompareVariableArrays(oldArr: Array<bazCode.BaseInfo> | undefined, newArr: Array<bazCode.BaseInfo>, owner: ParsedBase) {
+	function CompareVariableArrays(oldArr: Array<bazCode.ObjectInfo> | undefined, newArr: Array<bazCode.ObjectInfo>, owner: ParsedBase) {
 		if (oldArr) {
 			oldArr.forEach(item => {
 				let newItem = SpliceVariable(item, newArr);

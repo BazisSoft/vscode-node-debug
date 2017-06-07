@@ -10,6 +10,22 @@ export namespace bzConsts {
 		}
 		return result;
 	}
+	/**
+	 *
+	 * @param objName Full name of object
+	 * @param maybeOwnerName full name of probable object's owner
+	 */
+	export function IsOwner(objName: string[], maybeOwnerName: string[]): boolean{
+		let result = objName.length > maybeOwnerName.length;
+		if (result){
+			for (let i = 0; i < maybeOwnerName.length; i ++){
+				result = maybeOwnerName[i] === objName[i];
+				if (!result)
+					break;
+			}
+		}
+		return result;
+	}
 
 
 	export const Constructors = {
