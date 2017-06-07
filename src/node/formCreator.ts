@@ -33,7 +33,7 @@ export namespace bazForms {
 		kind: ParsedKind;
 		state: ChangeState;
 		name?: string;
-		// variable's owner name (e.g. ['Window'] for 'Window.Button1');
+		/** variable's owner name (e.g. ['Window'] for 'Window.Button1');*/
 		owner?: string[];
 		PushChange(change: ParsedBase) {
 			throw new Error(`PushChange: Can't push change ${change.name} in ${typeof this}`);
@@ -62,7 +62,8 @@ export namespace bazForms {
 			this.args.push(arg);
 		}
 		PushChange(change: ParsedBase) {
-			this.Modify();
+			if (change.Modified())
+				this.Modify();
 			this.args.push(change);
 		}
 	}
@@ -91,40 +92,6 @@ export namespace bazForms {
 		Modify() {
 			if (!this.Modified())
 				this.state = ChangeState.Modified;
-			// if (this.owner)
-			// 	this.owner.Modify();
-		}
-		// props: Array<ParsedBase> = [];
-		// calls: Array<ParsedFunction> = [];
-
-		PushChange(change: ParsedBase) {
-			// if (change.Modified() && this.state === ChangeState.None) {
-			// 	this.state = ChangeState.Modified;
-			// }
-			// //maybe it won't need
-			// if (change.Modified())
-			this.Modify();
-			switch (change.kind) {
-				// case ParsedKind.Value:
-				// case ParsedKind.Object: {
-				// 	this.props.push(change);
-				// 	break;
-				// }
-				// case ParsedKind.Function: {
-				// 	this.calls.push(<ParsedFunction>change);
-				// 	break;
-				// }
-				// case ParsedKind.FormComponent: {
-				// 	//it should work only for 'Form.Properties' value
-				// 	if (this.owner && this.owner.kind === ParsedKind.Form) {
-				// 		this.owner.PushChange(<ParsedComponent>change);
-				// 		break;
-				// 	}
-				// }
-				default: {
-					throw new Error(`PushChange: cannot push change with kind ${change.kind} into ${typeof this}`);
-				}
-			}
 		}
 	}
 
@@ -133,36 +100,12 @@ export namespace bazForms {
 			super(name, state);
 			this.kind = ParsedKind.FormComponent;
 		}
-		// components: Array<ParsedComponent> = [];
-		//constructor of object
+		/**constructor of object*/
 		type: string;
-		//arguments of constructor
+		/**arguments of constructor*/
 		args: Array<ParsedValue>;
 		/** component owner's name */
 		compOwner?: string[];
-		PushChange(change: ParsedBase) {
-			if (change.Modified() && this.state === ChangeState.None) {
-				this.state = ChangeState.Modified;
-			}
-			switch (change.kind) {
-				// case ParsedKind.Value:
-				// case ParsedKind.Object: {
-				// 	this.props.push(change);
-				// 	break;
-				// }
-				// case ParsedKind.Function: {
-				// 	this.calls.push(<ParsedFunction>change);
-				// 	break;
-				// }
-				// case ParsedKind.FormComponent: {
-				// 	this.components.push(<ParsedComponent>change);
-				// 	break;
-				// }
-				default: {
-					throw new Error(`PushChange: cannot push change with kind ${change.kind} into ${typeof this}`);
-				}
-			}
-		}
 	}
 
 	export class ParsedForm extends ParsedComponent {
@@ -228,15 +171,6 @@ export namespace bazForms {
 			})
 			return result
 		}
-		// GetFormUpdate(formName: string[]): ParsedForm{
-		// 	let vars = this.variables;
-		// 	for (let i = 0; i < vars.length; i ++){
-		// 		let variable = vars[i];
-		// 		if (bzConsts.NamesEqual(variable.GetFullName(), formName))
-		// 			return <ParsedForm>variable;
-		// 	}
-		// 	throw new Error(`cannot find form '${formName.join('.')}'`);
-		// }
 
 		GetFormUpdate(formName: string[]): FormChange {
 			let result = new FormChange();
@@ -255,10 +189,11 @@ export namespace bazForms {
 	}
 
 	function SpliceVariable(oldVar: bazCode.BaseInfo, newArr: Array<bazCode.BaseInfo>): bazCode.BaseInfo | undefined {
-		for (let i = 0; i < newArr.length; i++) {
-			if (newArr[i].name === oldVar[i].name)
-				return newArr.splice(i, 1)[0];
-		}
+		if (oldVar)
+			for (let i = 0; i < newArr.length; i++) {
+				if (newArr[i].name === oldVar.name)
+					return newArr.splice(i, 1)[0];
+			}
 		return undefined;
 	}
 
@@ -266,18 +201,11 @@ export namespace bazForms {
 		if (oldArr) {
 			oldArr.forEach(item => {
 				let newItem = SpliceVariable(item, newArr);
-				if (newItem) {
-					CompareVariables(item, newItem, owner);
-				}
-				else {
-					let newChange = new ParsedBase(item.name, ParsedKind.Unknown, ChangeState.Deleted);
-					owner.PushChange(newChange);
-				}
+				CompareVariables(item, newItem, owner);
 			})
 		}
 		newArr.forEach(item => {
 			CompareVariables(undefined, item, owner);
-			//owner.PushChange(arg);
 		})
 	}
 
@@ -305,8 +233,9 @@ export namespace bazForms {
 			result = new ParsedForm(newObj.name, state);
 			let oldInit = oldObj ? oldObj.initializer : undefined;
 			let newInit = newObj.initializer;
-			if (oldInit instanceof bazCode.FunctionInfo &&
-				newInit instanceof bazCode.FunctionInfo) {
+			if (newInit instanceof bazCode.FunctionInfo) {
+				if (!(oldInit instanceof bazCode.FunctionInfo))
+					oldInit = undefined;
 				//should be always
 				result.type = newInit.name;
 				let func = CompareFunctions(oldInit, newInit, <any>undefined);
@@ -322,7 +251,7 @@ export namespace bazForms {
 			result = new ParsedForm(oldObj.name, ChangeState.Deleted);
 		}
 
-		if (result && result.Modified()) {
+		if (result) {
 			currentForms.PushChange(result);
 		}
 		return result;
@@ -367,9 +296,8 @@ export namespace bazForms {
 					}
 					else {
 						newParsedObject = new ParsedObject(newObj.name, state);
-						// owner.PushChange(newParsedObject);
 						currentForms.PushChange(newParsedObject);
-						//TODO:
+						//TODO: compare objects (for longlong future)
 					}
 				}
 				else {
@@ -381,7 +309,6 @@ export namespace bazForms {
 			}
 			else {
 				newParsedObject = new ParsedObject(newObj.name, state);
-				// owner.PushChange(newParsedObject);
 				currentForms.PushChange(newParsedObject);
 			}
 			if (newParsedObject && newObj.owner) {
@@ -391,18 +318,9 @@ export namespace bazForms {
 		else {
 			//TODO: maybe never
 		}
-		// let newParsedObject = new ParsedObject(newObj.name);
-		// if (!oldObj){
-		// 	newParsedObject.state = ChangeState.Created;
-		// 	CompareVariableArrays(undefined, newObj.props, newParsedObject);
-		// }
-		// else {
-		// 	CompareVariableArrays(oldObj.props, newObj.props, newParsedObject);
-
-		// }
 	}
 
-	function CompareVariables(oldVar: bazCode.BaseInfo | undefined, newVar: bazCode.BaseInfo, owner: ParsedBase): ParsedBase | undefined {
+	function CompareVariables(oldVar: bazCode.BaseInfo | undefined, newVar: bazCode.BaseInfo | undefined, owner: ParsedBase): ParsedBase | undefined {
 		if (newVar) {
 			if (!oldVar || oldVar.kind === newVar.kind) {
 				let newChange: ParsedBase | undefined;
@@ -460,11 +378,53 @@ export namespace bazForms {
 				return newChange;
 			}
 			else {
-				//TODO:
+				//TODO: maybe never
 			}
 		}
-		else {
-
+		else if (oldVar){
+			let state = ChangeState.Deleted;
+			let deletedVariable: ParsedBase | undefined;
+			switch (oldVar.kind) {
+				case InfoKind.ObjectInfo: {
+					let oldObj = <bazCode.ObjectInfo>oldVar;
+					let oldInit = oldObj.initializer;
+					if (oldInit){
+						let initName = oldInit.name;
+						if (bzConsts.IsComponentConstructor(initName)){
+							deletedVariable = new ParsedComponent(oldObj.name, state);
+							if (oldInit.owner) //it should be always
+								(<ParsedComponent>deletedVariable).compOwner = oldInit.owner.GetFullName(true);
+						} else if (initName === bzConsts.Constructors.NewForm){
+							deletedVariable = new ParsedForm(oldObj.name, state);
+						}
+					}
+					if (!deletedVariable){
+						deletedVariable = new ParsedObject(oldObj.name, state);
+					}
+					if (oldObj.owner){
+						deletedVariable.owner = oldObj.owner.GetFullName();
+					}
+					break;
+				}
+				case InfoKind.FunctionInfo: {
+					deletedVariable = new ParsedFunction(oldVar.name, state);
+					break;
+				}
+				case InfoKind.ValueInfo: {
+					deletedVariable = new ParsedValue(oldVar.name, undefined, state);
+					break;
+				}
+				case InfoKind.ReferenceInfo: {
+					deletedVariable = new ParsedReference(oldVar.name, state);
+					break;
+				}
+				default: {
+					ErrorLog(`CompareVariables: variable has incorrect kind: ${oldVar.kind}`);
+				}
+			}
+			if (deletedVariable){
+				currentForms.PushChange(deletedVariable);
+			}
 		}
 	}
 

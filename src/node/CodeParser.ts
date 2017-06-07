@@ -254,9 +254,6 @@ export namespace bazCode {
 		public AddNewItem(item: BaseInfo) {
 			if (!(item instanceof ObjectInfo))
 				throw new ParseError('new item is not ObjectInfo');
-			// if (item.owner) {
-			// 	item.owner.AddNewItem(item);
-			// }
 			else {
 				this.AddVar(item);
 			}
@@ -318,31 +315,10 @@ export namespace bazCode {
 				newFunc.range = owner.range.Copy();
 				newFunc.owner = owner;
 			}
-			//this.variables.push(newFunc);
 			result = newFunc;
 			if (!result)
 				throw new ParseError(`can't create function ${fullName.join('.')} in SourceInfo.FindFunction`);
 			return result;
-
-			// let result: FunctionInfo | undefined;
-			// // maybe it will be optional
-			// for (let i = 0; i < this.variables.length; i++) {
-			// 	let variable = this.variables[i]
-			// 	if (variable.name === fullName[0]) {
-			// 		fullName.splice(0, 1);
-			// 		result = variable.FindFunction(fullName);
-			// 		if (result)
-			// 			return result;
-			// 	}
-			// }
-			// //if no one function found
-			// let newObj: ObjectInfo = fullName.length === 1 ? new FunctionInfo(fullName[0], this.source) : new ObjectInfo(fullName[0], this.source);
-			// this.variables.push(newObj);
-			// fullName.splice(0, 1);
-			// result = newObj.FindFunction(fullName);
-			// if (!result)
-			// 	throw new ParseError(`can't create function ${fullName.join('.')} in SourceInfo.FindFunction`);
-			// return result;
 
 		}
 		Copy(): SourceInfo {
@@ -351,9 +327,6 @@ export namespace bazCode {
 			for (let i = 0; i < this.variables.length; i ++){
 				result.variables.push(this.variables[i].Copy(result));
 			}
-			// this.variables.forEach(element => {
-			// 	result.variables.push(element.Copy(result));
-			// });
 			return result;
 		}
 		ClearEmpty() {
@@ -410,7 +383,6 @@ export namespace bazCode {
 		let result = new InfoRange(node.pos, node.end);
 		let rootNode = node;
 		let parent = rootNode.parent;
-		// debugger;
 		while (parent && (parent.kind !== ts.SyntaxKind.SourceFile)) {
 			rootNode = parent;
 			parent = rootNode.parent;
@@ -418,8 +390,6 @@ export namespace bazCode {
 		if (rootNode !== node) {
 			if (Math.abs(rootNode.end - node.end) < 2)
 				result.end = rootNode.end;
-			// if (Math.abs(rootNode.pos - node.pos) < 2)
-			// 	result.pos = rootNode.pos
 		}
 		return result;
 	}
@@ -452,8 +422,6 @@ export namespace bazCode {
 					break;
 				}
 				case ts.SyntaxKind.PropertyAccessExpression: {
-					// let referName = getFullNameOfObjectInfo(init);
-					// obj.refersTo = obj.source.FindVariable(referName);
 					parseNode(init, obj);
 					break;
 				}
@@ -708,10 +676,6 @@ export namespace bazCode {
 			ts.forEachChild(node, (child) => {
 				parseNode(child, info);
 			})
-
-		// node.getChildren().forEach((child)=>{
-		// 	info = parseNode(child, info);
-		// })
 		return info;
 	}
 
@@ -763,16 +727,6 @@ export namespace bazCode {
 		let newComponentInfo = <NewComponentMessage>msg;
 		let componentOwner = newComponentInfo.owner.split('.');
 		let owner = parsedSource.FindVariable(componentOwner, true);
-		// let start: number;
-		// {
-		// 	let init = owner.initializer;
-		// 	if (init){
-		// 		start = init.initRange.end;
-		// 	}
-		// 	else{
-		// 		start = owner.initRange.end;
-		// 	}
-		// }
 		let start = owner.initRange.end;
 		result.pos = result.end = start;
 		let name = newComponentInfo.name;
@@ -821,7 +775,7 @@ export namespace bazCode {
 		if (comp.initializer && bzConsts.IsComponentConstructor(comp.initializer.name))
 			lIndex = GetLayoutIndex(propName);
 		if (lIndex === -1) {
-			let prop = comp.source.FindVariable([propName], false);
+			let prop = comp.source.FindVariable(fullCompName.split('.').concat([propName]), false);
 			if (prop) {
 				let resultExists = false;
 				if (!(prop instanceof FunctionInfo)) {

@@ -137,12 +137,12 @@ function logSessionError(error: string): void {
 	}
 }
 
-// it isn't used for now
-// function ShowError(error: string): void {
-// 	if (logging) {
-// 		vscode.window.showErrorMessage(error);
-// 	}
-// }
+/*it isn't used for now
+function ShowError(error: string): void {
+	if (logging) {
+		vscode.window.showErrorMessage(error);
+	}
+}*/
 
 function sendMessage(client: Net.Socket, msg: string) {
 	if (client && !client.destroyed) {
@@ -162,9 +162,8 @@ function RunFormEditor(formInfo?: bazForms.FormChange) {
 			client.on('connect', err => {
 				connected = true;
 				if (formInfo) {
-					ShowFormEditor(formInfo);
+					UpdateFormEditor(formInfo);
 				}
-				//this._initialize(response);
 			});
 
 			const timeout = 10000; //timeout of 10 sec to connect
@@ -210,7 +209,7 @@ function RunFormEditor(formInfo?: bazForms.FormChange) {
 		}
 	}
 	else if (formInfo) {
-		ShowFormEditor(formInfo);
+		// UpdateFormEditor(formInfo);
 	}
 }
 
@@ -236,59 +235,14 @@ function StringifyCircular(obj): string {
 }
 
 function updateSource(src: ts.SourceFile) {
-	SessionLog(`Source: ${StringifyCircular(src.statements)}`);
-	let parsedSource = bazCode.parseSource(src, logSessionError);
+	//SessionLog(`Source: ${StringifyCircular(src.statements)}`);
+	let newSource = bazCode.parseSource(src, logSessionError);
 	let oldSource = parsedSources.GetSource(src.fileName);
-	parsedSources.SetSource(parsedSource);
-	if (oldSource) {
-		let formsInfo = bazForms.MakeForms(oldSource, logSessionError);
-		if (currentFormName) {
-			let form: bazForms.ParsedForm | undefined;
-			for (let i = 0; i < formsInfo.length; i++) {
-				let info = formsInfo[i];
-				if (info.owner + '.' + info.name === currentFormName) {
-					form = info;
-					break;
-				}
-			}
-			if (form) {
-				//old code
-				// let updates = bazForms.MakeFormUpdates(form, parsedSource, logSessionError);
-				// if (updates)
-				// 	UpdateFormEditor(updates);
-				let newForms = bazForms.MakeForms(bazCode.parseSource(src, logSessionError), logSessionError);
-				let newForm: bazForms.ParsedForm | undefined;
-				for (let i = 0; i < newForms.length; i++) {
-					let info = newForms[i];
-					if (info.owner + '.' + info.name === currentFormName) {
-						newForm = info;
-						break;
-					}
-				}
-				if (newForm) {
-					let updates = bazForms.CompareForms(form, newForm, logSessionError);
-					if (updates)
-						UpdateFormEditor(updates);
-				}
-			}
-		}
-	}
-	else {
-		let formsInfo = bazForms.MakeForms(parsedSource, logSessionError);
-		parsedSources.SetSource(parsedSource);
-		if (currentFormName) {
-			let form: bazForms.ParsedForm | undefined;
-			for (let i = 0; i < formsInfo.length; i++) {
-				let info = formsInfo[i];
-				if (info.owner + '.' + info.name === currentFormName) {
-					form = info;
-					break;
-				}
-			}
-			if (form) {
-				ShowFormEditor(form);
-			}
-		}
+	parsedSources.SetSource(newSource);
+	let forms = bazForms.MakeChanges(oldSource, newSource, logSessionError);
+	if (currentFormName){
+		let FormChange = forms.GetFormUpdate(currentFormName.split('.'));
+		UpdateFormEditor(FormChange);
 	}
 }
 
@@ -413,12 +367,12 @@ function UpdateFormEditor(newInfo/*: bazForms.ComponentChanges*/) {
 }
 
 function onDidChangeTextDocument(ev: vscode.TextDocumentChangeEvent): void {
-	// if (!formOpened)
-	// 	return;
+	if (!formOpened)
+		return;
 	try {
 		if (curTimeout)
 			clearTimeout(curTimeout);
-		let fileName = ev.document.fileName//.replace(/\\/g, '\/');
+		let fileName = ev.document.fileName
 		let src = <ts.SourceFile>sourceFiles.GetSource(fileName);
 		if (!src)
 			return;
@@ -437,9 +391,6 @@ function onDidChangeTextDocument(ev: vscode.TextDocumentChangeEvent): void {
 			src = src.update(newText, changeRange);
 			if ((updateOnEnter && element.text.indexOf('\n') > -1) || (updateOnSemicolon && element.text === ';'))
 				NeedUpdate = true;
-			// fs.appendFileSync('D:\\tmp\\changes.out',
-			// 	'---------------------------------------\n' +
-			// 	src.getFullText() + `\n --docVersion = ${ev.document.version}\n`);
 		});
 		sourceFiles.SetSource(src);
 		if (NeedUpdate) {
@@ -450,19 +401,6 @@ function onDidChangeTextDocument(ev: vscode.TextDocumentChangeEvent): void {
 			curTimeout = setTimeout(() => {
 				updateSource(src);
 			}, parseTimeout);
-
-		// let element = ev.contentChanges[0];
-		// src.update(ev.document.getText(), {
-		// 	span: {
-		// 		start: element.range.start.character,
-		// 		length: element.rangeLength
-		// 	},
-		// 	newLength: element.text.length
-		// });
-		// fs.appendFileSync('D:\\tmp\\changes.out',
-		// 	'---------------------------------------\n' +
-		// 	JSON.stringify(src.statements) + `\n docVersion = ${ev.document.version}`);
-
 	}
 	catch (e) {
 		vscode.window.showErrorMessage(e.message);
@@ -480,7 +418,7 @@ function openFormEditor() {
 		}
 		let curDoc = vscode.window.activeTextEditor.document;
 		let text = curDoc.getText();
-		let fileName = curDoc.fileName//.replace(/\\/g, '\/');
+		let fileName = curDoc.fileName;
 		let src = sourceFiles.GetSource(fileName);
 		if (!src) {
 			src = ts.createSourceFile(fileName, text, ts.ScriptTarget.ES2016, true);
