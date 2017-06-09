@@ -319,7 +319,7 @@ export namespace bazCode {
 			for (let i = 0; i < this.variables.length; i++) {
 				let variable = this.variables[i];
 				if (bzConsts.NamesEqual(variable.GetFullName(), fullName) && variable instanceof FunctionInfo) {
-					return variable.Copy(variable.source);
+					return variable;
 				}
 			}
 			let result: FunctionInfo | undefined;
@@ -795,8 +795,8 @@ export namespace bazCode {
 		if (comp.initializer && bzConsts.IsComponentConstructor(comp.initializer.name))
 			lIndex = GetLayoutIndex(propName);
 		if (lIndex === -1) {
-			let prop = comp.source.FindVariable(fullCompName.split('.').concat([propName]), false);
-			if (prop) {
+			try{
+				let prop = comp.source.FindVariable(fullCompName.split('.').concat([propName]), false);
 				let resultExists = false;
 				if (!(prop instanceof FunctionInfo)) {
 					if (prop.valueRange) {
@@ -826,13 +826,13 @@ export namespace bazCode {
 					}
 				}
 			}
-			else {
+			catch(e){
 				result.pos = result.end = comp.initRange.end;
 				result.newText = `\n${fullCompName}.${propName} = ${newValue};`
 			}
 		}
 		else {
-			let layout = comp.source.FindFunction([bzConsts.LayoutFuncName]);
+			let layout = comp.source.FindFunction(fullCompName.split('.').concat([bzConsts.LayoutFuncName]));
 			if (layout && !layout.range.IsEmpty()) {
 				let argRange = layout.args[lIndex].range;
 				result.pos = argRange.pos;
