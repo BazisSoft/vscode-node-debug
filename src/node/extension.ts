@@ -14,6 +14,7 @@ import * as Net from 'net';
 import * as cp from 'child_process';
 import { bazCode } from './CodeParser';
 import { bazForms } from './formCreator';
+import { bzConsts } from './formConstants';
 import * as Registry from 'winreg';
 
 const localize = nls.config(process.env.VSCODE_NLS_CONFIG)();
@@ -88,7 +89,6 @@ let formEditorProcess: cp.ChildProcess;
 
 /**constants of typ */
 const OutMessageType = {
-	FormInfo: 'forminfo',
 	UpdateInfo: 'update'
 }
 const InMessageType = {
@@ -150,6 +150,22 @@ function sendMessage(client: Net.Socket, msg: string) {
 		const data = 'content-length: ' + Buffer.byteLength(msg, 'utf8') + '\r\n' + msg;
 		client.write(data, 'utf8');
 	}
+}
+
+function MakeNewForm(formName: string) {
+	let doc = vscode.window.activeTextEditor.document;
+	let newChanges: vscode.TextEdit[] = [];
+	let edit = new vscode.WorkspaceEdit()
+	let formDeclaration = new bazCode.TextChange();
+	//by default put new declaration into start of document
+	formDeclaration.pos = formDeclaration.end = 0;
+	formDeclaration.newText = `let ${formName} = ${bzConsts.Constructors.NewForm}();\n`;
+	newChanges.push(MakeTextEdit(doc, formDeclaration));
+	//set current form name - when changes will be accepted;
+	currentFormName = formName;
+	RunFormEditor();
+	edit.set(doc.uri, newChanges);
+	vscode.workspace.applyEdit(edit);
 }
 
 function RunFormEditor(formInfo?: bazForms.FormChange) {
@@ -241,23 +257,26 @@ function updateSource(src: ts.SourceFile) {
 	let oldSource = parsedSources.GetSource(src.fileName);
 	parsedSources.SetSource(newSource);
 	let forms = bazForms.MakeChanges(oldSource, newSource, logSessionError);
-	if (currentFormName){
+	fs.writeFileSync(logDir + 'forms.out', JSON.stringify(forms));
+	fs.writeFileSync(logDir + 'result.out', StringifyCircular(newSource));
+	fs.writeFileSync(logDir + 'src.out', StringifyCircular(src.statements));
+	if (currentFormName) {
 		let FormChange = forms.GetFormUpdate(currentFormName.split('.'));
 		UpdateFormEditor(FormChange);
 	}
 }
 
-function pushInMessage(msg: string) {
+function MakeTextEdit(doc: vscode.TextDocument, change: bazCode.TextChange): vscode.TextEdit {
+	let startPos = doc.positionAt(change.pos);
+	let endPos = doc.positionAt(change.end);
+	let result = new vscode.TextEdit(
+		new vscode.Range(startPos, endPos),
+		change.newText
+	)
+	return result;
+}
 
-	function MakeTextEdit(doc: vscode.TextDocument, change: bazCode.TextChange): vscode.TextEdit {
-		let startPos = doc.positionAt(change.pos);
-		let endPos = doc.positionAt(change.end);
-		let result = new vscode.TextEdit(
-			new vscode.Range(startPos, endPos),
-			change.newText
-		)
-		return result;
-	}
+function pushInMessage(msg: string) {
 	let jsonMsg = JSON.parse(msg);
 	let type = jsonMsg['type'];
 	let fName = jsonMsg['filename'];
@@ -281,10 +300,10 @@ function pushInMessage(msg: string) {
 			}
 			break;
 		}
-		case InMessageType.DeleteComponent:{
-			for (let i = 0; i < message.length; i ++){
+		case InMessageType.DeleteComponent: {
+			for (let i = 0; i < message.length; i++) {
 				let deletions = bazCode.DeleteComponent(message[i], parsedSource);
-				deletions.forEach(deletion =>{
+				deletions.forEach(deletion => {
 					newChanges.push(MakeTextEdit(doc, deletion));
 				})
 			}
@@ -437,16 +456,34 @@ function openFormEditor() {
 		let result = bazCode.parseSource(src, logSessionError);
 		parsedSources.SetSource(result);
 		let forms = bazForms.MakeChanges(undefined, result, logSessionError);
-		let formNames: string[] = forms.GetFormNames();
+		const createFormText = 'Create new Form';
+		let formNames: Array<string> = [createFormText].concat(forms.GetFormNames());
 		if (formNames.length > 0) {
 			vscode.window.showQuickPick(formNames, {
 				placeHolder: 'Выберите имя формы'
 			}).then((value: string) => {
-				let formInfo = forms.GetFormUpdate(value.split('.'));
-				if (formInfo) {
-					currentFormName = value;
-					currentFileName = fileName;
-					RunFormEditor(formInfo);
+				currentFileName = fileName;
+				if (value === createFormText) {
+					vscode.window.showInputBox({
+						prompt: 'Введите имя формы',
+						validateInput: (value) => {
+							if (value.indexOf('.') >= 0 ||
+								value.indexOf(',') >= 0 ||
+								value.indexOf(' ') >= 0)
+								return value;
+							else
+								return '';
+						}
+					}).then((value) => {
+						MakeNewForm(value);
+					})
+				}
+				else {
+					let formInfo = forms.GetFormUpdate(value.split('.'));
+					if (formInfo && formInfo.length > 0) {
+						currentFormName = value;
+						RunFormEditor(formInfo);
+					}
 				}
 			})
 		}
