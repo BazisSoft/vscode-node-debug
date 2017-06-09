@@ -348,9 +348,11 @@ export namespace bazForms {
 						}
 						else {
 							let oldObj = <bazCode.ObjectInfo>oldVar;
+							let state = ChangeState.None;
 							if (oldObj.value !== newObj.value) {
-								newChange = new ParsedValue(newObj.name, newObj.value, ChangeState.Modified);
+								state = ChangeState.Modified;
 							}
+							newChange = new ParsedValue(newObj.name, newObj.value, state);
 						}
 						if (newChange && newObj.owner) {
 							newChange.owner = newObj.owner.GetFullName();
@@ -381,7 +383,7 @@ export namespace bazForms {
 						ErrorLog(`CompareVariables: variable has incorrect kind: ${newVar.kind}`);
 					}
 				}
-				if (newChange && newChange.Modified())
+				if (newChange)
 					owner.PushChange(newChange);
 				return newChange;
 			}
