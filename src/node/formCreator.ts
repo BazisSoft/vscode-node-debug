@@ -129,7 +129,7 @@ export namespace bazForms {
 			case ParsedKind.Value: {
 				fullname = (<ParsedValue>variable).owner || [];
 			}
-			case ParsedKind.Function:{
+			case ParsedKind.Function: {
 				fullname = (<ParsedFunction>variable).owner || [];
 			}
 		}
@@ -142,8 +142,8 @@ export namespace bazForms {
 		return false;
 	}
 
-	function RemoveNonModified(form: FormChange){
-		for (let i = form.length - 1; i > -1; i--){
+	function RemoveNonModified(form: FormChange) {
+		for (let i = form.length - 1; i > -1; i--) {
 			if (!form[i].Modified())
 				form.splice(i, 1);
 		}
@@ -223,7 +223,7 @@ export namespace bazForms {
 		let oldFunc = <bazCode.FunctionInfo>oldObj;
 		let newFunc = <bazCode.FunctionInfo>newObj;
 		let result = new ParsedFunction(newFunc.name, oldFunc ? ChangeState.None : ChangeState.Created);
-		if (newFunc.owner){
+		if (newFunc.owner) {
 			result.owner = newFunc.owner.GetFullName();
 		}
 		let oldArgs = oldFunc ? oldFunc.args : undefined;
@@ -281,6 +281,7 @@ export namespace bazForms {
 			let newFunc = CompareFunctions(oldInit, init, <any>undefined);
 			if (newFunc && newFunc.Modified()) {
 				newComp.args = <any>newFunc.args;
+				newComp.Modify();
 			}
 			currentForms.PushChange(newComp);
 		}
@@ -391,27 +392,27 @@ export namespace bazForms {
 				//TODO: maybe never
 			}
 		}
-		else if (oldVar){
+		else if (oldVar) {
 			let state = ChangeState.Deleted;
 			let deletedVariable: ParsedBase | undefined;
 			switch (oldVar.kind) {
 				case InfoKind.ObjectInfo: {
 					let oldObj = <bazCode.ObjectInfo>oldVar;
 					let oldInit = oldObj.initializer;
-					if (oldInit){
+					if (oldInit) {
 						let initName = oldInit.name;
-						if (bzConsts.IsComponentConstructor(initName)){
+						if (bzConsts.IsComponentConstructor(initName)) {
 							deletedVariable = new ParsedComponent(oldObj.name, state);
 							if (oldInit.owner) //it should be always
 								(<ParsedComponent>deletedVariable).compOwner = oldInit.owner.GetFullName(true);
-						} else if (initName === bzConsts.Constructors.NewForm){
+						} else if (initName === bzConsts.Constructors.NewForm) {
 							deletedVariable = new ParsedForm(oldObj.name, state);
 						}
 					}
-					if (!deletedVariable){
+					if (!deletedVariable) {
 						deletedVariable = new ParsedObject(oldObj.name, state);
 					}
-					if (oldObj.owner){
+					if (oldObj.owner) {
 						deletedVariable.owner = oldObj.owner.GetFullName();
 					}
 					break;
@@ -432,7 +433,7 @@ export namespace bazForms {
 					ErrorLog(`CompareVariables: variable has incorrect kind: ${oldVar.kind}`);
 				}
 			}
-			if (deletedVariable){
+			if (deletedVariable) {
 				currentForms.PushChange(deletedVariable);
 			}
 		}
