@@ -15,10 +15,10 @@ export namespace bzConsts {
 	 * @param objName Full name of object
 	 * @param maybeOwnerName full name of probable object's owner
 	 */
-	export function IsOwner(objName: string[], maybeOwnerName: string[]): boolean{
+	export function IsOwner(objName: string[], maybeOwnerName: string[]): boolean {
 		let result = objName.length > maybeOwnerName.length;
-		if (result){
-			for (let i = 0; i < maybeOwnerName.length; i ++){
+		if (result) {
+			for (let i = 0; i < maybeOwnerName.length; i++) {
 				result = maybeOwnerName[i] === objName[i];
 				if (!result)
 					break;
@@ -70,6 +70,26 @@ export namespace bzConsts {
 
 	export const LayoutFuncName = 'SetLayout'
 
+	export function GetLayoutIndex(layoutName: string): number {
+		switch (layoutName) {
+			case 'Left': return 0;
+			case 'Top': return 1;
+			case 'Width': return 2;
+			case 'Height': return 3;
+			default: return -1;
+		}
+	}
+
+	export function GetInitIndex(propName: string): number {
+		switch (propName) {
+			case 'Caption': return 0;
+			//TODO:
+			// case 'Value':
+			//return 1;
+			default: return -1;
+		}
+	}
+
 	export class Layout {
 		left: number;
 		top: number;
@@ -86,15 +106,15 @@ export namespace bzConsts {
 
 
 	export function GetConstantValue(variableName: string[]): string | undefined {
-		if (variableName.length === 2){
-			switch (variableName[0]){
-				case 'AlignmentType':{
+		if (variableName.length === 2) {
+			switch (variableName[0]) {
+				case 'AlignmentType': {
 					return AlignmentType[variableName[1]];
 				}
-				case 'AlignType':{
+				case 'AlignType': {
 					return AlignType[variableName[1]];
 				}
-				case 'WindowPosition':{
+				case 'WindowPosition': {
 					return WindowPosition[variableName[1]];
 				}
 			}
@@ -117,7 +137,7 @@ export namespace bzConsts {
 		Client = 5
 	}
 
-	enum WindowPosition{
+	enum WindowPosition {
 		Default = 0,
 		Left = 1,
 		Right = 2

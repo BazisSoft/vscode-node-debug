@@ -226,9 +226,9 @@ export namespace bazCode {
 			let fullname = this.GetFullName(true);
 			let result = bzConsts.IsOwner(fullname, objectFullName) ||
 				bzConsts.NamesEqual(fullname, objectFullName);
-			if (!result){
-				let initOwner = this.initializer? this.initializer.owner: undefined;
-				if (initOwner){
+			if (!result) {
+				let initOwner = this.initializer ? this.initializer.owner : undefined;
+				if (initOwner) {
 					fullname = initOwner.GetFullName(true);
 					result = bzConsts.IsOwner(fullname, objectFullName) ||
 						bzConsts.NamesEqual(fullname, objectFullName);
@@ -768,16 +768,6 @@ export namespace bazCode {
 		return result;
 	}
 
-	function GetLayoutIndex(layoutName: string): number {
-		switch (layoutName) {
-			case 'Left': return 0;
-			case 'Top': return 1;
-			case 'Width': return 2;
-			case 'Height': return 3;
-			default: return -1;
-		}
-	}
-
 	interface PropertyChangeMessage {
 		component: string;
 		property: string;
@@ -792,10 +782,19 @@ export namespace bazCode {
 		let comp = parsedSource.FindVariable(fullCompName.split('.'), false);
 		/**index of layout's property */
 		let lIndex = -1;
-		if (comp.initializer && bzConsts.IsComponentConstructor(comp.initializer.name))
-			lIndex = GetLayoutIndex(propName);
-		if (lIndex === -1) {
-			try{
+		/**
+		 * flag for specific property
+		 * e.g. 'Caption' is first initializer arg;
+		 */
+		let initArgIndex = -1;
+		if (comp.initializer && bzConsts.IsComponentConstructor(comp.initializer.name)) {
+			lIndex = bzConsts.GetLayoutIndex(propName);
+			if (lIndex === -1) {
+				initArgIndex = bzConsts.GetInitIndex(propName);
+			}
+		}
+		if (lIndex === -1 && initArgIndex === -1) {
+			try {
 				let prop = comp.source.FindVariable(fullCompName.split('.').concat([propName]), false);
 				let resultExists = false;
 				if (!(prop instanceof FunctionInfo)) {
@@ -826,22 +825,51 @@ export namespace bazCode {
 					}
 				}
 			}
-			catch(e){
+			catch (e) {
 				result.pos = result.end = comp.initRange.end;
 				result.newText = `\n${fullCompName}.${propName} = ${newValue};`
 			}
 		}
-		else {
+		else if (lIndex >= 0) {
 			let layout = comp.source.FindFunction(fullCompName.split('.').concat([bzConsts.LayoutFuncName]));
 			if (layout && !layout.range.IsEmpty()) {
 				let argRange = layout.args[lIndex].range;
 				result.pos = argRange.pos;
 				result.end = argRange.end;
-				result.newText = newValue;
+				result.newText = lIndex < 1 || lIndex > 2 ? '' : ' ' + newValue;
 			}
 			else {
 				result.pos = result.end = comp.initRange.end;
 				result.newText = `\n${fullCompName}.${propName} = ${newValue};`;
+			}
+		}
+		else if (initArgIndex >= 0) {
+			if (comp.initializer instanceof FunctionInfo) {
+				let init = (<FunctionInfo>comp.initializer);
+				let initArgs = init.args;
+				let argRange: InfoRange | undefined;
+				result.newText = '';
+				if (initArgs.length <= initArgIndex) {
+					argRange = new InfoRange();
+					//it should be pos before closing bracket
+					argRange.pos = argRange.end = init.range.end - 1;
+					/**count of missed args */
+					let missedCount = initArgIndex - initArgs.length;
+					while (missedCount > 0) {
+						//first arg should be always, so we put comma before empty arg
+						result.newText += `, ''`;
+						missedCount--;
+					}
+					result.newText += `, ${newValue}`;
+				}
+				else {
+					argRange = initArgs[initArgIndex].range;
+				}
+				if (argRange) {
+					result.pos = argRange.pos;
+					result.end = argRange.end;
+					result.newText += newValue;
+				}
 			}
 		}
 		return result;
@@ -861,7 +889,7 @@ export namespace bazCode {
 			for (let i = 0; i < names.length; i++) {
 				if (value.RelatedTo(names[i])) {
 					compRanges.push(value.initRange);
-					if (value.kind === InfoKind.ObjectInfo){
+					if (value.kind === InfoKind.ObjectInfo) {
 						names.push(value.GetFullName(true));
 					}
 					break;
