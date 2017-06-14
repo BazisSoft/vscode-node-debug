@@ -539,7 +539,7 @@ export namespace bazCode {
 
 	function MakeValue(value: string | boolean, range: InfoRange, src: SourceInfo): ObjectInfo {
 		let result = new ObjectInfo('', src, range);
-		result.value = <string>value;
+		result.value = value.toString();
 		result.valueRange = range;
 		return result
 	}
