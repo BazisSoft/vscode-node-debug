@@ -248,6 +248,12 @@ export namespace bazCode {
 			if (this.owner) {
 				result.owner = src.FindVariable(this.owner.GetFullName(), false);
 			}
+			if (this.range){
+				result.range = this.range.Copy();
+			}
+			if (this.initRange){
+				result.initRange = this.initRange.Copy();
+			}
 			return result;
 		}
 		kind: InfoKind = InfoKind.FunctionInfo;
@@ -499,6 +505,7 @@ export namespace bazCode {
 	function parseCallExpression(expr: ts.CallExpression, info: BaseInfo): FunctionInfo | undefined {
 		let fullCallName = getFullNameOfObjectInfo(expr.expression);
 		let newFunc = info.source.FindFunction(fullCallName);
+		newFunc = newFunc.Copy(info.source);
 		newFunc.range = new InfoRange(expr.pos, expr.end);
 		newFunc.initRange = GetFullInitRange(expr);
 		let funcArgs = new ObjectArrayInfo('', info.source);
@@ -734,6 +741,43 @@ export namespace bazCode {
 		newText: string;
 	}
 
+	function IsForm(component: ObjectInfo): boolean{
+		if (component.initializer){
+			let init = component.initializer;
+			if (!init.owner && bzConsts.Constructors.NewForm === init.name)
+				return true;
+		}
+		return false;
+	}
+	/**
+	 * Returns position where new declaration should be inserted
+	 * @param component Owner of new property/component, which declaration will be inserted
+	 */
+	function GetInsertPos(component: ObjectInfo, src: SourceInfo): number{
+		let result = -1;
+		if (component){
+			let owner = component;
+			let isForm = IsForm(component);
+			// if component is ${formname}.Properties, we set owner to form object
+			if (!isForm && owner.owner && IsForm(owner.owner)){
+				isForm = true;
+				owner = owner.owner;
+			}
+			for (let i = 0; i < src.variables.length; i ++ ){
+				let variable = src.variables[i];
+				if (variable.owner && variable.owner === owner){
+					if (isForm && variable.kind === InfoKind.FunctionInfo){
+						result = variable.initRange.pos;
+						break;
+					}
+					else
+						result = variable.initRange.end;
+				}
+			}
+		}
+		return result;
+	}
+
 	interface NewComponentMessage {
 		name: string;
 		type: string;
@@ -747,7 +791,8 @@ export namespace bazCode {
 		let newComponentInfo = <NewComponentMessage>msg;
 		let componentOwner = newComponentInfo.owner.split('.');
 		let owner = parsedSource.FindVariable(componentOwner, true);
-		let start = owner.initRange.end;
+		// let start = owner.initRange.end;
+		let start = GetInsertPos(owner, parsedSource);
 		result.pos = result.end = start;
 		let name = newComponentInfo.name;
 		let i = 1;
@@ -793,7 +838,11 @@ export namespace bazCode {
 				initArgIndex = bzConsts.GetInitIndex(propName);
 			}
 		}
-		if (lIndex === -1 && initArgIndex === -1) {
+		else{
+			// flag, that variable 'comp' isn't component;
+			lIndex = -2;
+		}
+		if (lIndex < 0 && initArgIndex < 0) {
 			try {
 				let prop = comp.source.FindVariable(fullCompName.split('.').concat([propName]), false);
 				let resultExists = false;
@@ -826,7 +875,12 @@ export namespace bazCode {
 				}
 			}
 			catch (e) {
-				result.pos = result.end = comp.initRange.end;
+				let start: number;
+				if (lIndex = -2)
+					start = comp.initRange.end;
+				else
+					start = GetInsertPos(comp, parsedSource);
+				result.pos = result.end = start;
 				result.newText = `\n${fullCompName}.${propName} = ${newValue};`
 			}
 		}
