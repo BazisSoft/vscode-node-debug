@@ -32,6 +32,7 @@
     "vscode-debugadapter": "^1.19.0",
     "vscode-debugprotocol": "^1.19.0",
     "vscode-nls": "^2.0.2",
+    "typescript": "^2.3.3",
     "winreg": "^1.2.4"
   },
   "repository": {
@@ -59,7 +60,6 @@
     "run-sequence": "^1.2.2",
     "tslint": "^3.15.1",
     "tslint-microsoft-contrib": "^2.0.14",
-    "typescript": "^2.3.3",
     "vsce": "^1.22.0",
     "vscode": "^1.1.0",
     "vscode-debugadapter-testsupport": "^1.19.0",
@@ -91,6 +91,10 @@
           "type": "boolean",
           "default": false,
           "description": "Включить полный лог последней сессии. По умолчанию выключено"
+        },
+        "bazis-debug.logDir":{
+          "type":"string",
+          "description": "Путь к директории, где будет храниться лог файл. По умолчанию - директория расширения"
         }
       }
     },

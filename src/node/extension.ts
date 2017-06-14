@@ -79,6 +79,20 @@ class Files<T extends FileSource>{
 		let result = this[path.normalize(fileName)];
 		return result;
 	}
+	Clear(){
+		for (let key in this){
+			switch(key){
+				case 'SetSource':
+				case 'GetSource':
+				case 'Clear':
+					break;
+				default:{
+					this[key] = undefined;
+					break;
+				}
+			}
+		}
+	}
 }
 
 let formOpened: boolean = false;
@@ -103,8 +117,8 @@ const sourceFiles = new Files<ts.SourceFile>();
 let parsedSources = new Files<bazCode.SourceInfo>();
 let curTimeout: NodeJS.Timer;
 let NeedUpdate = false;
-let logDir = vscode.extensions.getExtension('BazisSoft.bazis-debug').extensionPath + '\\';
-let sessionLogfile = logDir + 'session.out';
+let logDir = '';
+let sessionLogfile = '';
 let date = new Date();
 
 //TCP variables
@@ -138,12 +152,10 @@ function logSessionError(error: string): void {
 	}
 }
 
-/*it isn't used for now
+
 function ShowError(error: string): void {
-	if (logging) {
-		vscode.window.showErrorMessage(error);
-	}
-}*/
+	vscode.window.showErrorMessage(error);
+}
 
 function sendMessage(client: Net.Socket, msg: string) {
 	if (client && !client.destroyed) {
@@ -159,7 +171,8 @@ function MakeNewForm(formName: string) {
 	let formDeclaration = new bazCode.TextChange();
 	//by default put new declaration into start of document
 	formDeclaration.pos = formDeclaration.end = 0;
-	formDeclaration.newText = `let ${formName} = ${bzConsts.Constructors.NewForm}();\n`;
+	formDeclaration.newText = `let ${formName} = ${bzConsts.Constructors.NewForm}();\n` +
+		`\n${formName}.Show();\n`;
 	newChanges.push(MakeTextEdit(doc, formDeclaration));
 	//set current form name - when changes will be accepted;
 	currentFormName = formName;
@@ -217,6 +230,9 @@ function RunFormEditor(formInfo?: bazForms.FormChange) {
 			client.on('end', err => {
 				if (formEditorProcess)
 					formEditorProcess.kill();
+				//clear all infos
+				sourceFiles.Clear();
+				parsedSources.Clear();
 				formOpened = false;
 				client.removeAllListeners();
 				client.destroy();
@@ -445,7 +461,12 @@ function openFormEditor() {
 		if (lastSessionLogging) {
 			fs.writeFileSync(sessionLogfile, '');
 		}
-		let curDoc = vscode.window.activeTextEditor.document;
+		let curEdit = vscode.window.activeTextEditor;
+		if (!curEdit){
+			ShowError('Похоже, ни один файл не редактируется. Откройте фалй на редактирование');
+			return;
+		}
+		let curDoc = curEdit.document;
 		let text = curDoc.getText();
 		let fileName = curDoc.fileName;
 		let src = sourceFiles.GetSource(fileName);
@@ -456,18 +477,19 @@ function openFormEditor() {
 		let result = bazCode.parseSource(src, logSessionError);
 		parsedSources.SetSource(result);
 		let forms = bazForms.MakeChanges(undefined, result, logSessionError);
-		const createFormText = 'Create new Form';
+		const createFormText = 'Создать новую форму';
 		let formNames: Array<string> = [createFormText].concat(forms.GetFormNames());
-		if (formNames.length > 0) {
-			vscode.window.showQuickPick(formNames, {
-				placeHolder: 'Выберите имя формы'
-			}).then((value: string) => {
+		vscode.window.showQuickPick(formNames, {
+			placeHolder: 'Выберите имя формы'
+		}).then((value: string) => {
+			if (value){
 				currentFileName = fileName;
 				if (value === createFormText) {
 					vscode.window.showInputBox({
 						prompt: 'Введите имя формы',
 						validateInput: (value) => {
-							if (value.indexOf('.') >= 0 ||
+							if (!value ||
+								value.indexOf('.') >= 0 ||
 								value.indexOf(',') >= 0 ||
 								value.indexOf(' ') >= 0)
 								return value;
@@ -475,7 +497,8 @@ function openFormEditor() {
 								return '';
 						}
 					}).then((value) => {
-						MakeNewForm(value);
+						if (value)
+							MakeNewForm(value);
 					})
 				}
 				else {
@@ -485,10 +508,8 @@ function openFormEditor() {
 						RunFormEditor(formInfo);
 					}
 				}
-			})
-		}
-		else
-			vscode.window.showErrorMessage('There is no any form');
+			}
+		})
 		if (lastSessionLogging) {
 			try {
 				fs.writeFileSync(logDir + 'forms.out', JSON.stringify(forms));
@@ -524,6 +545,11 @@ export function activate(context: vscode.ExtensionContext) {
 	//read settings
 	let bazConfig = vscode.workspace.getConfiguration('bazis-debug');
 	lastSessionLogging = bazConfig.get('lastSessionLogging', false);
+	logDir = bazConfig.get('logDir', '');
+	if (!logDir){
+		logDir = vscode.extensions.getExtension('BazisSoft.bazis-debug').extensionPath + '\\';
+	}
+	sessionLogfile = logDir + 'session.out';
 
 	formEditorPath = bazConfig.get('formEditorPath', '');
 	if (!formEditorPath) {
