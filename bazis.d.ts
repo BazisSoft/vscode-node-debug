@@ -78,7 +78,7 @@ declare interface IDispatch {
     /**
      * Информациях о методах и свойствах объекта
      */
-    GetTypeInfo: string;
+    GetTypeInfo(): string;
 
 }
 
@@ -2101,6 +2101,37 @@ declare interface BoxesMaker {
 
 }
 
+declare interface ImportExport{
+    /**
+     * Импорт-экспорт в SVG
+     */
+    SVG: ImportExportSVG;
+}
+
+declare interface ImportExportSVG{
+    /**
+     * Качество аппроксимации кривых в линии [0-100]
+     */
+    CurveQuality: number;
+    /**
+     * Объединять элементы в полигоны, полилинии и кривые
+     */
+    GroupElems: boolean;
+    /**
+     * Сохранить контур
+     * @param filename Имя файла.
+     * @param contour Контур, данные которого сохранятся в файл
+     */
+    Save(filename: string, contour: Contour2D): boolean;
+    /**
+     * Загрузить контур
+     * @param filename Имя файла.
+     * @param contour Контур, куда считаются данные из файла
+     */
+    Load(filename: string, contour: Contour2D): boolean;
+}
+
+
 declare interface ScItemTovar {
     /**
      * Артикул элемента товара
@@ -2525,8 +2556,12 @@ declare function NewDoorsMaker(caption: string): DoorsMaker;
 declare function NewBoxesMaker(caption: string): BoxesMaker;
 
 /**
+ * Создать объект для импорта-экспорта
+ */
+declare function NewImportExport(): ImportExport;
+
+/**
  * Форматировать имя материала
- *
  */
 declare function FormatMatName(matName: string): string;
 
