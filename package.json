@@ -21,8 +21,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "engines": {
-    "vscode": "^1.3.0",
-    "node": "^6.2.0"
+    "vscode": "^1.3.0"
   },
   "dependencies": {
     "vscode-debugprotocol": "^1.15.0-pre.4",
