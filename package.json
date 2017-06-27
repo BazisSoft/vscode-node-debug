@@ -102,7 +102,8 @@
             "body": {
               "type": "bazis",
               "request": "launch",
-              "name": "${2:Launch Program}",
+              "name": "%bazis.launch.config.name%",
+              "sourceMaps": true,
               "program": "^\"\\${file}\""
             }
           }

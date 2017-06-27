@@ -15,7 +15,7 @@
 	"bazis.launch.program.description": "Абсолютный путь к программе.",
 	"bazis.launch.console.description": "Где следует выполнять запуск целевого объекта отладки: внутренняя консоль, интегрированный терминал или внешний терминал.",
 
-	"bazis.launch.config.name": "Запустить",
+	"bazis.launch.config.name": "Запустить программу",
 
 	"bazis.snippet.launch.label": "Базис: конфигурация запуска",
 	"bazis.snippet.launch.description": "Новая конфигурация для запуска отладчика"
