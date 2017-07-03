@@ -27,8 +27,9 @@ declare interface System {
     /**
      * Открыть диалог выбора папки
      * @param caption заголовок папки
+     * @param defaultFolder Папка по умолчанию
      */
-    askFolder(caption?: string): string;
+    askFolder(caption?: string, defaultFolder?: string): string;
     /**
      * Записать текст в файл
      * @deprecated используйте fs.writeFileSync
@@ -78,7 +79,7 @@ declare interface IDispatch {
     /**
      * Информациях о методах и свойствах объекта
      */
-    GetTypeInfo(): string;
+    GetTypeInfo: string;
 
 }
 
@@ -268,6 +269,10 @@ declare interface Action3D {
      * Сохранить модель в файл
      */
     SaveModel(filename: string);
+    /**
+     * Имя файла текущей модели
+     */
+    ModelFilename: string;
 }
 
 declare interface ScriptMenu {
@@ -1736,7 +1741,7 @@ declare interface Contour2D {
      */
     AddArc3(p1: Point, p2: Point, p3: Point): Object;
     /**
-     * Добавить эквидистанту контура. Последние 2 параметры отвечают за направление и скругление
+     * Добавить эквидистанту контура. Последние 2 параметра отвечают за направление и скругление
      * @param contour
      * @param offset
      * @param Side
@@ -1744,6 +1749,14 @@ declare interface Contour2D {
      * @param Pos
      */
     AddEquidistant(contour: Contour2D, offset: number, Side: boolean, Rounding: boolean, Pos?: Point);
+    /**
+     * Добавить эквидистанту контура (включая вложенные контуры). Последние 2 параметра отвечают за направление и скругление
+     * @param contour
+     * @param offset
+     * @param Side
+     * @param Rounding
+     */
+    AddEquidistantRecursive(contour: Contour2D, offset: number, Side: boolean, Rounding: boolean);
     /**
      * Вычесть замкнутый контур
      * @param contour
