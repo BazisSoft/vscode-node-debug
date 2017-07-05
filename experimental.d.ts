@@ -7,6 +7,10 @@ declare interface ModelTransformer {
      */
     Apply(undo: Undo3D);
     /**
+     * Максимальный выступ панели, при котором соединение считается угловым
+     */
+    CornerMaxOffset: number;
+    /**
      * Экспериментальная версия класса
      */
     TestVersion(): number;

@@ -71,7 +71,7 @@ declare interface System {
     /**
      * Текущая версия Bazis API
      */
-    apiVersion: number;
+    apiVersion: string;
 
 }
 
@@ -254,7 +254,7 @@ declare interface Action3D {
      */
     RayTraceScene();
     /**
-     * Обработчик завершения работы скрипта
+     * Обработчик завершения тонирования изображения
      */
     OnRayTraceFinished: Function;
     /**
@@ -458,7 +458,7 @@ declare interface ScriptProperty {
      */
     Validate(): boolean;
     /**
-     * Расположение свойства на форме
+     * Расположение свойства на форме (для форм)
      */
     Layout: PropertyLayout;
     /**
@@ -470,15 +470,15 @@ declare interface ScriptProperty {
      */
     SetLayout(L: number, T: number, W: number, H: number);
     /**
-     * Задать выравнивание компонента
+     * Задать выравнивание компонента (для форм)
      */
     Align: AlignType;
     /**
-     * Выравнивать с отступами
+     * Выравнивать с отступами (для форм)
      */
     AlignWithMargins: boolean;
     /**
-     * Отступы между компонентами
+     * Отступы между компонентами (для форм)
      * @param  L Отступ слева
      * @param  R Отступ справа
      * @param  T Отступ сверху
@@ -486,7 +486,7 @@ declare interface ScriptProperty {
      */
     SetMargins(L: number, R: number, T: number, B: number);
     /**
-     * Выравнивание текста в надписи
+     * Выравнивание текста в надписи (для форм)
      */
     Alignment: AlignmentType;
     /**
@@ -1145,7 +1145,7 @@ declare interface Object3 extends Object {
     /**
      * Привести объект к структурному
      */
-    AsList: List3D;
+    AsList(): List3D;
     /**
      * Привести объект к типу панели
      */
