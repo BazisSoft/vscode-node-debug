@@ -270,6 +270,18 @@ declare interface Action3D {
      */
     SaveModel(filename: string);
     /**
+     * Создать новую модель
+     */
+    NewModel();
+    /**
+     * Создать новую фурнитуру
+     */
+    NewFurniture();
+    /**
+     * Создать новый фрагмент
+     */
+    NewFragment();
+    /**
      * Имя файла текущей модели
      */
     ModelFilename: string;

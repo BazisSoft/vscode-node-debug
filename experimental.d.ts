@@ -11,9 +11,10 @@ declare interface ModelTransformer {
      */
     CornerMaxOffset: number;
     /**
-     * Экспериментальная версия класса
+     * Максимальное расстояние для определения стыка
+     * @default 0.5;
      */
-    TestVersion(): number;
+    ConnectionMaxDistance: number;
     /**
      * Добавить изменение толщины панели
      * @param panel Изменяемая панель
