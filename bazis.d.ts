@@ -1452,6 +1452,14 @@ declare interface AnimBlock extends List3D{
      * Тип анимации
      */
     AnimType: AnimationType;
+    /**
+     * Угол открытия двери
+     */
+    DoorAngle: number;
+    /**
+     * Смещение двери
+     */
+    DoorShift: number;
 }
 
 declare interface Block extends AnimBlock {
@@ -2323,19 +2331,19 @@ declare var Undo: Undo3D;
  * Вывести окно ввода строки
  * @param message Текст сообщения
  */
-declare function prompt(message): string;
+declare function prompt(message: string): string;
 
 /**
  * Вывести окно сообщения
  * @param str Текст сообщения
  */
-declare function alert(str);
+declare function alert(str: string);
 
 /**
  * Показать окно подтверждения (Да/Нет)
  * @param message Текст сообщения
  */
-declare function confirm(message): boolean;
+declare function confirm(message: string): boolean;
 
 /**
  * Открыть фурнитуру для установки на модель
