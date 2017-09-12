@@ -1,5 +1,7 @@
 ﻿/**
- *
+ * Класс, реализующий "умные" операции с моделью.
+ * В частности - замену материалов разной толщины
+ * с перестроением модели.
  */
 declare interface ModelTransformer {
     /**
@@ -22,12 +24,19 @@ declare interface ModelTransformer {
      */
     AddPanelThicknessChange(panel: Panel, thicknessDifference: number);
     /**
+     * Добавить изменение толщины пластика панели
+     * @param plastic Изменяемый пластик
+     * @param thicknessDifference Разница между новой и старой толщинами
+     * @param panel Панель, которой принадлежит пластик
+     */
+    SetPlasticChange(plastic: PanelPlastic, thicknessDifference: number, panel: Panel);
+    /**
      * Вычислить все объекты рядом с панелью
      * @param auto Автоматически определить направление изменения толщины
      */
     Compute(auto: boolean);
     /**
-     * Очистить всю информацию обо всех панелях
+     * Очистить всю информацию обо всех объектах
      */
     ClearChangesInfo(): void;
 

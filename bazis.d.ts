@@ -2259,8 +2259,9 @@ declare function NewCOMObject(CLSID: string): IDispatch;
 
 /**
  * Создать форму со свойствами
+ * @param caption Заголовок формы
  */
-declare function NewForm(): ScriptForm;
+declare function NewForm(caption: string): ScriptForm;
 
 /**
  * Создать базу параметрического крепежа
