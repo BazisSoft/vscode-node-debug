@@ -653,28 +653,28 @@ declare enum WindowPosition {
 }
 
 /**
- * Позиция фурнитуры при установке крепежа
- * @deprecated
+ * Позиция фурнитуры при установке крепежа по схеме
+ *
  */
-// declare enum FurniturePosition {
-//     /**
-//      * Установка фурнитуры внутри стыка
-//      */
-//     Inside,
-//     /**
-//      * Установка фурнитуры снаружи стыка
-//      */
-//     Outside,
-//     /**
-//      * Установка фурнитуры вверху стыка (только для стыков с горизонтальной панелью)
-//      */
-//     Up,
-//     /**
-//      * Установка фурнитуры внизу стыка (только для стыков с горизонтальной панелью)
-//      */
-//     Down
+declare enum FurniturePosition {
+    /**
+     * Установка фурнитуры внутри стыка
+     */
+    Inside,
+    /**
+     * Установка фурнитуры снаружи стыка
+     */
+    Outside,
+    /**
+     * Установка фурнитуры вверху стыка (только для стыков с горизонтальной панелью)
+     */
+    Up,
+    /**
+     * Установка фурнитуры внизу стыка (только для стыков с горизонтальной панелью)
+     */
+    Down
 
-// }
+}
 
 
 /**
@@ -774,6 +774,43 @@ declare interface InspectorOptions {
      */
     MatOutOfStockAnalyze: boolean;
 
+}
+/**
+ * Тип монтирования фурнитуры/фрагмента
+ */
+declare enum DatumMode{
+    /**
+     * Отсутствует
+     */
+    None,
+    /**
+     * На плоскость
+     */
+    Face,
+    /**
+     * по двум непараллельным плоскостям
+     */
+    FaceFace,
+    /**
+     * по плоскости и середине торца панели
+     */
+    FaceButt,
+    /**
+     * По плоскости и ребру
+     */
+    FaceEdge,
+    /**
+     * на 2 параллельные плоскости
+     */
+    ParallelFaces,
+    /**
+     * секция
+     */
+    Box,
+    /**
+     * Крепеж по схеме
+     */
+    Scheme
 }
 
 declare interface ModelInspector {
@@ -2055,6 +2092,22 @@ declare interface InFurniture extends InControl {
      * @param angle Угол (в градусах)
      */
     Mount1(panel: Panel, x: number, y: number, z: number, angle: number): Object3;
+    /**
+     * Установить схему крепежа на стык панелей
+     * @param Panel1
+     * @param Panel2
+     * @param FurnPos позиция фурнитуры
+     * @param BasisPoint Базовая точка
+     */
+    MountScheme(Panel1: Panel, Panel2: Panel, FurnPos: FurniturePosition, BasisPoint: Vector): Object3;
+    /**
+     * Фильтр по типу монтирования фурнитуры/фрагмента
+     */
+    DatumModeFilter: DatumMode;
+    /**
+     * Тип монтирования выбранной фурнитуры/фрагмента
+     */
+    DatumMode: DatumMode;
 }
 
 declare interface InfFurniture {
@@ -2076,6 +2129,22 @@ declare interface InfFurniture {
      * @param angle Угол (В градусах)
      */
     Mount1(panel: Panel, x: number, y: number, z: number, angle: number): Object3;
+    /**
+     * Установить схему крепежа на стык панелей
+     * @param Panel1
+     * @param Panel2
+     * @param FurnPos позиция фурнитуры
+     * @param BasisPoint Базовая точка
+     */
+    MountScheme(Panel1: Panel, Panel2: Panel, FurnPos: FurniturePosition, BasisPoint: Vector): Object3;
+    /**
+     * Фильтр по типу монтирования фурнитуры/фрагмента
+     */
+    DatumModeFilter: DatumMode;
+    /**
+     * Тип монтирования выбранной фурнитуры/фрагмента
+     */
+    DatumMode: DatumMode;6
 }
 
 declare interface DoorsMaker {
