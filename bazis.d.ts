@@ -2101,6 +2101,14 @@ declare interface InFurniture extends InControl {
      */
     MountScheme(Panel1: Panel, Panel2: Panel, FurnPos: FurniturePosition, BasisPoint: Vector): Object3;
     /**
+     * Установить секцию
+     * @param Position Позиция секции
+     * @param Size Размер секции
+     * @param axisZ Направление оси Z секции
+     * @param axisY Направление оси Y секции
+     */
+    MountBox(Position: Vector, Size: Vector, axisZ: Vector, axisY: Vector): Object3;
+    /**
      * Фильтр по типу монтирования фурнитуры/фрагмента
      */
     DatumModeFilter: DatumMode;
@@ -2137,6 +2145,14 @@ declare interface InfFurniture {
      * @param BasisPoint Базовая точка
      */
     MountScheme(Panel1: Panel, Panel2: Panel, FurnPos: FurniturePosition, BasisPoint: Vector): Object3;
+    /**
+     * Установить секцию
+     * @param Position Позиция секции
+     * @param Size Размер секции
+     * @param axisZ Направление оси Z секции
+     * @param axisY Направление оси Y секции
+     */
+    MountBox(Position: Vector, Size: Vector, axisZ: Vector, axisY: Vector): Object3;
     /**
      * Фильтр по типу монтирования фурнитуры/фрагмента
      */
