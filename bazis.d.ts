@@ -260,7 +260,7 @@ declare interface Action3D {
     /**
      * Набор редактируемых свойств
      */
-    Properties: ScriptProperty;
+    Properties: RootProperties;
     /**
      * Загрузить модель из файла
      */
@@ -330,18 +330,19 @@ declare interface ScriptMenu {
     /**
      * Создать строковое свойство
      * @param caption Название свойства
+     * @param value
      */
-    NewString(caption: string): ScriptStringProperty;
+    NewString(caption: string, value?: string): ScriptStringProperty;
     /**
      * Создать свойство вида Да/Нет
      * @param caption Название свойства
      */
-    NewBool(caption: string): ScriptBooleanProperty;
+    NewBool(caption: string, value?: boolean): ScriptBooleanProperty;
     /**
      * Создать числовое свойство
      * @param caption Название свойства
      */
-    NewNumber(caption: string): ScriptNumberProperty;
+    NewNumber(caption: string, value?: number): ScriptNumberProperty;
     /**
      * Создать кнопку
      * @param caption Название свойства
@@ -581,6 +582,13 @@ declare interface ScriptProperty {
      */
     DropDownMenu: ScriptMenu;
 
+}
+
+declare interface RootProperties extends ScriptProperty{
+    /**
+     * Создать объект с информацией о фурнитуре
+     */
+    NewFurnitureValue(): InfFurniture;
 }
 
 /**
@@ -1947,6 +1955,9 @@ declare interface Geometry2D {
 
 }
 
+/**
+ * Элемент на динамической панели
+ */
 declare interface InControl {
     /**
      *
@@ -1971,6 +1982,9 @@ declare interface InControl {
 
 }
 
+/**
+ * Элемент "Кнопка" на динамической панели
+ */
 declare interface InButton extends InControl {
     /**
      * Создать подменю
@@ -1984,6 +1998,9 @@ declare interface InButton extends InControl {
 
 }
 
+/**
+ * Элемент ввода числа с плавающей точкой на динамической панели
+ */
 declare interface InFloat extends InControl {
     /**
      * Значение
@@ -2000,6 +2017,9 @@ declare interface InFloat extends InControl {
 
 }
 
+/**
+ * Элемент ввода целого числа на динамической панели
+ */
 declare interface InNumber extends InControl {
     /**
      * Значение
@@ -2016,6 +2036,9 @@ declare interface InNumber extends InControl {
 
 }
 
+/**
+ * Элемент выбора материала на динамической панели
+ */
 declare interface InMaterial extends InControl {
     /**
      * Наименование материала
@@ -2040,7 +2063,9 @@ declare interface InMaterial extends InControl {
     Apply(obj: Object3);
 
 }
-
+/**
+ * Элемент выбора кромки на динамической панели
+ */
 declare interface InButtMaterial extends InControl {
     /**
      * Наименование кромки
@@ -2072,7 +2097,9 @@ declare interface InButtMaterial extends InControl {
     ClipPanel: boolean;
 
 }
-
+/**
+ * Элемент выбора фурнитуры на динамической панели
+ */
 declare interface InFurniture extends InControl {
     /**
      * Установить крепеж между двух панелей
@@ -2094,12 +2121,12 @@ declare interface InFurniture extends InControl {
     Mount1(panel: Panel, x: number, y: number, z: number, angle: number): Object3;
     /**
      * Установить схему крепежа на стык панелей
-     * @param Panel1
-     * @param Panel2
-     * @param FurnPos позиция фурнитуры
+     * @param panel1
+     * @param panel2
+     * @param FurniturePosition позиция фурнитуры
      * @param BasisPoint Базовая точка
      */
-    MountScheme(Panel1: Panel, Panel2: Panel, FurnPos: FurniturePosition, BasisPoint: Vector): Object3;
+    MountScheme(panel1: Panel, panel2: Panel, FurniturePosition: FurniturePosition, BasisPoint: Vector): Object3;
     /**
      * Установить секцию
      * @param Position Позиция секции
@@ -2118,6 +2145,9 @@ declare interface InFurniture extends InControl {
     DatumMode: DatumMode;
 }
 
+/**
+ * Информация о фурнитуре
+ */
 declare interface InfFurniture {
     /**
      * Установить крепеж между двух панелей
@@ -2139,12 +2169,12 @@ declare interface InfFurniture {
     Mount1(panel: Panel, x: number, y: number, z: number, angle: number): Object3;
     /**
      * Установить схему крепежа на стык панелей
-     * @param Panel1
-     * @param Panel2
-     * @param FurnPos позиция фурнитуры
+     * @param panel1
+     * @param panel2
+     * @param FurniturePosition позиция фурнитуры
      * @param BasisPoint Базовая точка
      */
-    MountScheme(Panel1: Panel, Panel2: Panel, FurnPos: FurniturePosition, BasisPoint: Vector): Object3;
+    MountScheme(panel1: Panel, panel2: Panel, FurniturePosition: FurniturePosition, BasisPoint: Vector): Object3;
     /**
      * Установить секцию
      * @param Position Позиция секции
@@ -2160,7 +2190,19 @@ declare interface InfFurniture {
     /**
      * Тип монтирования выбранной фурнитуры/фрагмента
      */
-    DatumMode: DatumMode;6
+    DatumMode: DatumMode;
+    /**
+     * Зашифровать параметры фурнитуры в строку
+     */
+    EncodeToString(): string;
+    /**
+     * Восстановить параметры фурнитуры из строки
+     */
+    DecodeFromString(str: string);
+    /**
+     * Открыть окно выбора фурнитуры (возвращает false, если выбор отменен)
+     */
+    Choose(): boolean;
 }
 
 declare interface DoorsMaker {
