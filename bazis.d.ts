@@ -71,8 +71,11 @@ declare interface System {
     /**
      * Текущая версия Bazis API
      */
-    apiVersion: string;
-
+    apiVersion: number;
+    /**
+     * Максимальная версия Bazis API, гарантирующая работу скрипта.
+     */
+    developerApiVersion: number;
 }
 
 declare interface IDispatch {
@@ -723,14 +726,16 @@ declare enum ErrorType {
     PanelNotFixed
 
 }
-
+/**
+ * Параметры обнаруженной ошибки
+ */
 declare interface InspectorError {
     /**
      * Тип ошибки
      */
     ErrorType: ErrorType;
     /**
-     * Количество объектов в ошибке
+     * Количество объектов, относящихся к ошибке
      */
     ErrorObjectsCount: number;
     /**
@@ -747,7 +752,9 @@ declare interface InspectorError {
     ObjectsNames: string;
 
 }
-
+/**
+ * Параметры анализа модели
+ */
 declare interface InspectorOptions {
     /**
      * Проверка пересечения объектов
@@ -2183,6 +2190,10 @@ declare interface InfFurniture {
      * @param axisY Направление оси Y секции
      */
     MountBox(Position: Vector, Size: Vector, axisZ: Vector, axisY: Vector): Object3;
+    /**
+     * Создать объект фурнитуры
+     */
+    Make(Thickness1: number, Thickness2: number): Object3;
     /**
      * Фильтр по типу монтирования фурнитуры/фрагмента
      */
