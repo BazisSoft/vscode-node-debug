@@ -31,6 +31,19 @@ declare interface System {
      */
     askFolder(caption?: string, defaultFolder?: string): string;
     /**
+     * Получить имя файла без пути
+     */
+    getFileName(filename: string): string;
+    /**
+     * Получить имя файла без пути и расширения
+     */
+    getFileNameWithoutExtension(filename: string): string;
+    /**
+     * Открыть диалог сохранения файла
+     * @param ext расширение файла
+     */
+    askFileNameSave(ext: string): string;
+    /**
      * Записать текст в файл
      * @deprecated используйте fs.writeFileSync
      * @param filename путь к файлу
@@ -777,7 +790,7 @@ declare interface InspectorOptions {
      */
     PanelTooLargeAnalyze: boolean;
     /**
-     * Проверка размера пластика на плите
+     * Проверка размера пластика на панели
      */
     PlasticTooLargeAnalyze: boolean;
     /**
@@ -966,7 +979,10 @@ declare interface ScriptGroupProperty extends ScriptProperty {
      * Максимальная высота
      */
     MaxHeight: number;
-
+    /**
+     * Добавление полосы прокрутки
+     */
+    Scrollable: boolean;
 }
 
 declare interface ScriptStringProperty extends ScriptProperty {
@@ -1348,6 +1364,11 @@ declare interface Object3 extends Object {
      * Перестроить объект после изменения его свойств
      */
     Build();
+    /**
+     * Определить, является ли объект obj родителем объекта
+     * @param obj Предполагаемый родитель объекта
+     */
+    IsOwner(obj: Object3): boolean;
 
 }
 
@@ -2302,7 +2323,9 @@ declare interface ImportExportSVG{
     Load(filename: string, contour: Contour2D): boolean;
 }
 
-
+/**
+ * Элемент товара
+ */
 declare interface ScItemTovar {
     /**
      * Артикул элемента товара
@@ -2331,12 +2354,15 @@ declare interface ScItemTovar {
 
 }
 
+/**
+ * Товар
+ */
 declare interface ScItemTovarList {
     /**
      * Доступ к элементу товара по индексу
      * @param [index]
      */
-    Items([index]): ScItemTovar;
+    Items: Array<ScItemTovar>;
     /**
      * Количество элементов товара
      */
@@ -2352,9 +2378,13 @@ declare interface ScItemTovarList {
     /**
      * Найти элемент товара по имени
      * @param name
-     * @param CaseSensitive
+     * @param CaseSensitive Учитывать регистр
      */
-    FindByName(name: string, CaseSensitive): ScItemTovar;
+    FindByName(name: string, CaseSensitive: boolean): ScItemTovar;
+    /**
+     * Является ли объект нестандартным
+     */
+	IsNotStandart: boolean;
 
 }
 

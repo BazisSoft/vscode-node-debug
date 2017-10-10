@@ -99,6 +99,21 @@ interface Action3D {
     SaveProject(filename: string, project: ProjectFile);
 }
 
+interface Undo3D{
+    /**
+     * Начать отменяемую операцию
+     */
+    BeginOper(name: string);
+    /**
+     * Закончить отменяемую операцию
+     */
+    EndOper(name: string);
+    /**
+     * Закончить и отменить последнюю отменяемую операцию
+     */
+    EndAndUndoOper();
+}
+
 declare function NewValueEditor(value?: number): ValueEditor;
 
 declare interface JointInfo {
