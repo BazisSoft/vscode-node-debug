@@ -1747,12 +1747,152 @@ declare interface PanelCut {
     Contour: Contour2D;
 
 }
+/**
+ * Тип 2D элемента
+ */
+declare enum ElementType{
+    /**
+     * Неизвестный
+     */
+    Unknown,
+    /**
+     * Линия
+     */
+    Line,
+    /**
+     * Дуга
+     */
+    Arc,
+    /**
+     * Окружность
+     */
+    Circle,
+    /**
+     * Список элементов
+     */
+    List,
+    /**
+     * Эллипс
+     */
+    Ellipse
+}
+/**
+ * 2D-элемент
+ */
+declare interface Elem2D{
+    /**
+     * Тип 2D элемента
+     */
+    ElType: ElementType;
+    IsLine(): boolean;
+    AsLine(): Line2D;
+    IsCircle(): boolean;
+    AsCircle(): Circle2D;
+    IsEllipse(): boolean;
+    AsEllipse(): Ellipse2D;
+    IsArc(): boolean;
+    AsArc(): Arc2D;
+    IsList(): boolean;
+    AsList(): Contour2D;
+}
+/**
+ * 2D линия
+ */
+declare interface Line2D extends Elem2D{
+    /**
+     * Начало
+     */
+    Pos1: Point;
+    /**
+     * Конец
+     */
+	Pos2: Point;
+}
+/**
+ * 2D дуга
+ */
+declare interface Arc2D extends Elem2D{
+    /**
+     * Начало
+     */
+    Pos1: Point;
+    /**
+     * Конец
+     */
+    Pos2: Point;
+    /**
+     * Центр
+     */
+	Center: Point;
+    /**
+     * Направление
+     * True = против часовой стрелки
+     * False = по часовой стрелке
+     */
+	ArcDir: boolean;
+
+}
+/**
+ * 2D окружность
+ */
+declare interface Circle2D extends Elem2D{
+    /**
+     * Центр
+     */
+    Center : Point;
+    /**
+     * Радиус
+     */
+    CirRadius: number;
+    /**
+     * Направление
+     * True = против часовой стрелки
+     * False = по часовой стрелке
+     */
+	Dir: boolean;
+}
+/**
+ * 2D эллипс
+ */
+declare interface Ellipse2D extends Elem2D{
+    /**
+     * Центр
+     */
+    Center: Point;
+    /**
+     * Большой радиус
+     */
+    MajorRadius: number;
+    /**
+     * Малый радиус
+     */
+    MinorRadius: number;
+    /**
+     * Угол
+     */
+    MajorAxisAngle: number;
+    /**
+     * Направление
+     * True = против часовой стрелки
+     * False = по часовой стрелке
+     */
+    Dir: boolean;
+}
 
 declare interface Contour2D {
     /**
      * Количество элементов контура
      */
     Count: number;
+    /**
+     * Список элементов контура
+     */
+    Objects: Elem2D[];
+    /**
+     * Элемент контура
+     * @param index индекс элемента
+     */
+    [index: number]: Elem2D;
     /**
      * Ширина контура
      */
