@@ -116,7 +116,15 @@ interface Undo3D{
 
 declare function NewValueEditor(value?: number): ValueEditor;
 
-declare interface JointInfo {
+// Типы соединений
+declare const sctNone;
+declare const sctSidePlane;
+declare const sctPlaneSide;
+declare const sctSideSide;
+declare const sctPlanePlane;
+declare const sctComplex;
+
+declare interface ConnectionInfo {
     /**
      * Первый объект стыка
      */
@@ -126,13 +134,9 @@ declare interface JointInfo {
      */
     Object2: Object3,
     /**
-     * Тип стыка
+     * Тип соединения
      */
-    JointType: number,
-    /**
-     * Базовая точка стыка
-     */
-    BasisPoint: Vector;
+    ConnectionType: number,
     /**
      * Объект стыка
      */
@@ -155,18 +159,17 @@ declare interface JointInfo {
 
 
 declare interface ConnectionsInfo {
-    Joints: Array<JointInfo>,
-    JointCount: number,
-    Created: boolean
+    Connections: Array<ConnectionInfo>,
+    ConnectionCount: number
 }
 
-declare function NewJointInfo(Obj1: Object3, Obj2: Object3): ConnectionsInfo;
+declare function NewConnectionInfo(Obj1: Object3, Obj2: Object3): ConnectionsInfo;
 
 declare interface AdvancedJoint {
     /**
      * информация о стыке
      */
-    readonly Info: JointInfo,
+    readonly Info: ConnectionInfo,
     /**
      * Схема крепежа
      */
@@ -203,7 +206,7 @@ interface Model3D {
     DS: Designer;
 }
 
-declare function NewAdvancedJoint(Info: JointInfo): AdvancedJoint;
+declare function NewAdvancedJoint(Info: ConnectionInfo): AdvancedJoint;
 
 declare interface FurnitureInfo {
     /**
