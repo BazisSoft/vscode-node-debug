@@ -116,76 +116,28 @@ interface Undo3D{
 
 declare function NewValueEditor(value?: number): ValueEditor;
 
-// Типы соединений
-declare const sctNone;
-declare const sctSidePlane;
-declare const sctPlaneSide;
-declare const sctSideSide;
-declare const sctPlanePlane;
-declare const sctComplex;
-
-declare interface ConnectionInfo {
-    /**
-     * Первый объект стыка
-     */
-    Object1: Object3,
-    /**
-     * Второй обЪект стыка
-     */
-    Object2: Object3,
-    /**
-     * Тип соединения
-     */
-    ConnectionType: number,
-    /**
-     * Объект стыка
-     */
-    JointExtrusion: Extrusion;
-    /**
-     * Отрисовка стыка.
-     * @param Color цвет стыка
-     * @param linesOnly рисовать только линии
-     */
-    Draw(Color: number, linesOnly?: boolean): void;
-    SetEdgesOwner(newOwner: List3D): void;
-    /**
-     * проверка пересечения объекта стыка с лучом на экране. Результат - дистанция до стыка.
-     * Если пересечения нет, возвращает -1
-     * @param x
-     * @param y
-     */
-    RayIntersect(x: number, y: number): number;
-}
-
-
-declare interface ConnectionsInfo {
-    Connections: Array<ConnectionInfo>,
-    ConnectionCount: number
-}
-
-declare function NewConnectionInfo(Obj1: Object3, Obj2: Object3): ConnectionsInfo;
-
 declare interface AdvancedJoint {
-    /**
-     * информация о стыке
-     */
-    readonly Info: ConnectionInfo,
     /**
      * Схема крепежа
      */
-    Scheme: ParamFastener,
+    Scheme: ParamFastener;
+    /**
+     * Точка начала монтирования
+     */
+    StartPoint: Vector;
+    /**
+     * Точка конца монтирования
+     */
+    EndPoint: Vector;
+    /**
+     * Вектор "верха" блока схемы
+     * (локальная ось Y будущего блока схемы)
+     */
+    UpDir: Vector;
     /**
      * Блок крепежа, установленного по схеме
      */
-    readonly JointBlock: Block,
-    /**
-     * Выбрать ребро для монтирования
-     */
-    SelectEdge(edge: Edge3): boolean,
-    /**
-     * Изменить направление монтирования
-     */
-    RevertEdgeDirection(edge: Edge3): boolean,
+    readonly JointBlock: Block;
     /**
      * Смонтировать схему на стык
      * @param TempScheme схема крепежа. По умолчанию this.Scheme
@@ -206,7 +158,7 @@ interface Model3D {
     DS: Designer;
 }
 
-declare function NewAdvancedJoint(Info: ConnectionInfo): AdvancedJoint;
+declare function NewAdvancedJoint(): AdvancedJoint;
 
 declare interface FurnitureInfo {
     /**
@@ -262,3 +214,10 @@ declare interface Point2 {
     X: number;
     Y: number;
 }
+
+
+/**
+ *
+ * @param dir
+ */
+declare function OrientCamera(dir: Vector);

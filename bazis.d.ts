@@ -86,7 +86,7 @@ declare interface System {
      */
     apiVersion: number;
     /**
-     * Максимальная версия Bazis API, гарантирующая работу скрипта.
+     *
      */
     developerApiVersion: number;
 }
