@@ -90,6 +90,10 @@ interface Action3D {
      */
     MousePos: Point2;
     /**
+     * Показывает, был ли отменен скрипт
+     */
+    Canceled: boolean;
+    /**
      * Загрузить проект из файла
      */
     LoadProject(filename: string): ProjectFile;
@@ -97,6 +101,14 @@ interface Action3D {
      * Сохранить проект в файл
      */
     SaveProject(filename: string, project: ProjectFile);
+
+    /**
+     * Замена фурнитуры
+     * @param oldList список имен заменяемых 3д-объектов
+     * @param newList список фурнитуры для замены
+     * @param objList список объектов, среди которых будет произведена замена
+     */
+    ReplaceFurniture(oldList: string[], newList: InfFurniture[], objList: Object3[]);
 }
 
 interface Undo3D{
@@ -221,3 +233,68 @@ declare interface Point2 {
  * @param dir
  */
 declare function OrientCamera(dir: Vector);
+
+
+declare interface TWPCatalog{
+    id: number;
+    name: string;
+    modelFolderId: number;
+    shared: boolean;
+}
+
+declare interface TWPFileItem {
+    id: number;
+    name: string;
+    folder: boolean;
+}
+
+declare interface TWPMaterial {
+    id: number;
+    catalogId: number;
+    name: string;
+    texture: string;
+    bumpTexture: string;
+    sizex: number;
+    sizey: number;
+    offsetx: number;
+    offsety: number;
+    angle: number;
+    transparency: number;
+    reflection: number;
+    ambient: number;
+    specular: number;
+    shininess: number;
+}
+
+declare interface TWebPlanner{
+
+    // authentication
+    Login(UserName: string, Password: string): string;
+    UseToken(Token: string): boolean;
+
+    // catalogs
+    GetCatalogs(): TWPCatalog[];
+    GetCatalog(Id: number): TWPCatalog;
+    NewCatalog(Name: string): TWPCatalog;
+    DeleteCatalog(Id: number): void;
+
+    // materials
+    GetMaterials(CatalogId: number): TWPMaterial[];
+    UpdateMaterial(Material: TWPMaterial): number;
+    UpdateMaterialTexture(Material: TWPMaterial, TextureImageFile: string): TWPMaterial;
+    UpdateMaterialBumpMap(Material: TWPMaterial, NormalImageFile: string): TWPMaterial;
+
+    // files
+    GetFileItem(Id: number): TWPFileItem;
+    GetFileItems(FolderId: number): TWPFileItem[];
+    NewFolder(Name: string, parentFolder: number): TWPFileItem;
+    UploadModel(FolderOrFileId: number, FileName: string): TWPFileItem;
+    UpdateFileItem(Id: number, NewName: string, NewArticle?: string): TWPFileItem;
+    SetFileThumnail(Id: number, ImageFileName: string, Resize?: boolean): string;
+    DeleteFileItem(Id: number);
+}
+
+/**
+ * @param Server - имя сервера. По умолчанию https://www.wigwam3d.com
+ */
+declare function NewWebPlanner(Server?: string): TWebPlanner;
