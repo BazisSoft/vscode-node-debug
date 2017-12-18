@@ -305,6 +305,40 @@ declare interface Action3D {
      * Имя файла текущей модели
      */
     ModelFilename: string;
+    /**
+     * Расстановка позиций
+     * @param Mode режим расстановки
+     * @param Model структурный объект
+     */
+    ArrangePositions(Mode: TFurnPositionMode, Model: List3D): boolean;
+}
+/**
+ * Артикул модели
+ */
+declare interface FurnArticle{
+    /**
+     * Имя модели
+     */
+    Name: string
+    NameWithCode(): string;
+    Code: string;
+    FurnType: string;
+    Author: string;
+    Subject: string;
+    Enterprise: string;
+    Notes: string;
+    /**
+     * Код заказа
+     */
+    OrderCode: string;
+    /**
+     * Имя заказа
+     */
+    OrderName: string;
+    /**
+     * Тип установки фурнитуры/фрагмента
+     */
+    DatumMode: DatumMode;
 }
 
 declare interface ScriptMenu {
@@ -769,6 +803,24 @@ declare interface InspectorError {
     ObjectsNames: string;
 
 }
+/**
+ * Режим расстановки позиций
+ */
+declare enum TFurnPositionMode{
+    /**
+     * Раставить позиции заново
+     */
+    All = 0,
+    /**
+     * Раставить позиции у новых объектов
+     */
+    New = 1,
+    /**
+     * Проверить позиции
+     */
+    Check = 2
+}
+
 /**
  * Параметры анализа модели
  */
@@ -2629,6 +2681,11 @@ declare var geometry: Geometry2D;
  * Активный скрипт
  */
 declare var Action: Action3D;
+
+/**
+ * Артикул модели
+ */
+declare var Article: FurnArticle;
 
 /**
  * Текущий материал
