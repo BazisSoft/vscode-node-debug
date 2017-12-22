@@ -311,6 +311,13 @@ declare interface Action3D {
      * @param Model структурный объект
      */
     ArrangePositions(Mode: TFurnPositionMode, Model: List3D): boolean;
+    /**
+     * Замена фурнитуры
+     * @param Old список названий старой фурнитуры
+     * @param New список значений новой фурнитуры
+     * @param Fasteners список объектов для замены
+     */
+    ReplaceFurniture(Old: string[], New: InfFurniture[], Fasteners: Object3[]);
 }
 /**
  * Артикул модели
@@ -2967,6 +2974,12 @@ declare function NewImportExport(): ImportExport;
  * Форматировать имя материала
  */
 declare function FormatMatName(matName: string): string;
+
+/**
+ * Повернуть камеру
+ * @param dir Новое направление взгляда
+ */
+declare function OrientCamera(dir: Vector);
 
 /**
  * Список элементов товара. Только для Салона

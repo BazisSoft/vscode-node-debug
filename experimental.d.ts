@@ -227,14 +227,6 @@ declare interface Point2 {
     Y: number;
 }
 
-
-/**
- *
- * @param dir
- */
-declare function OrientCamera(dir: Vector);
-
-
 declare interface TWPCatalog{
     id: number;
     name: string;
