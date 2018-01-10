@@ -310,7 +310,7 @@ declare interface Action3D {
      * @param Mode режим расстановки
      * @param Model структурный объект
      */
-    ArrangePositions(Mode: TFurnPositionMode, Model: List3D): boolean;
+    ArrangePositions(Mode: FurnPositionMode, Model: List3D): boolean;
     /**
      * Замена фурнитуры
      * @param Old список названий старой фурнитуры
@@ -813,7 +813,7 @@ declare interface InspectorError {
 /**
  * Режим расстановки позиций
  */
-declare enum TFurnPositionMode{
+declare enum FurnPositionMode{
     /**
      * Раставить позиции заново
      */
