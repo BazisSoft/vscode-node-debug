@@ -319,7 +319,7 @@ declare interface Action3D {
      */
     ReplaceFurniture(Old: string[], New: InfFurniture[], Fasteners: Object3[]);
     /**
-     * Вызов окна выбора материала из базы. Возвращает выбранный материал
+     * Вызов окна выбора материала из базы. Возвращает полное имя материала
      */
     ChooseMaterial(): string;
 }
