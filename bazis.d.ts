@@ -318,11 +318,15 @@ declare interface Action3D {
      * @param Fasteners список объектов для замены
      */
     ReplaceFurniture(Old: string[], New: InfFurniture[], Fasteners: Object3[]);
+    /**
+     * Вызов окна выбора материала из базы. Возвращает выбранный материал
+     */
+    ChooseMaterial(): string;
 }
 /**
  * Артикул модели
  */
-declare interface FurnArticle{
+declare interface FurnArticle {
     /**
      * Имя модели
      */
@@ -645,7 +649,7 @@ declare interface ScriptProperty {
 
 }
 
-declare interface RootProperties extends ScriptProperty{
+declare interface RootProperties extends ScriptProperty {
     /**
      * Создать объект с информацией о фурнитуре
      */
@@ -813,7 +817,7 @@ declare interface InspectorError {
 /**
  * Режим расстановки позиций
  */
-declare enum FurnPositionMode{
+declare enum FurnPositionMode {
     /**
      * Раставить позиции заново
      */
@@ -869,7 +873,7 @@ declare interface InspectorOptions {
 /**
  * Тип монтирования фурнитуры/фрагмента
  */
-declare enum DatumMode{
+declare enum DatumMode {
     /**
      * Отсутствует
      */
@@ -1583,7 +1587,7 @@ declare interface Trajectory extends Object3 {
 
 }
 
-declare interface AnimBlock extends List3D{
+declare interface AnimBlock extends List3D {
     /**
      * Тип анимации
      */
@@ -1813,7 +1817,7 @@ declare interface PanelCut {
 /**
  * Тип 2D элемента
  */
-declare enum ElementType{
+declare enum ElementType {
     /**
      * Неизвестный
      */
@@ -1842,7 +1846,7 @@ declare enum ElementType{
 /**
  * 2D-элемент
  */
-declare interface Elem2D{
+declare interface Elem2D {
     /**
      * Тип 2D элемента
      */
@@ -1861,7 +1865,7 @@ declare interface Elem2D{
 /**
  * 2D линия
  */
-declare interface Line2D extends Elem2D{
+declare interface Line2D extends Elem2D {
     /**
      * Начало
      */
@@ -1869,12 +1873,12 @@ declare interface Line2D extends Elem2D{
     /**
      * Конец
      */
-	Pos2: Point;
+    Pos2: Point;
 }
 /**
  * 2D дуга
  */
-declare interface Arc2D extends Elem2D{
+declare interface Arc2D extends Elem2D {
     /**
      * Начало
      */
@@ -1886,23 +1890,23 @@ declare interface Arc2D extends Elem2D{
     /**
      * Центр
      */
-	Center: Point;
+    Center: Point;
     /**
      * Направление
      * True = против часовой стрелки
      * False = по часовой стрелке
      */
-	ArcDir: boolean;
+    ArcDir: boolean;
 
 }
 /**
  * 2D окружность
  */
-declare interface Circle2D extends Elem2D{
+declare interface Circle2D extends Elem2D {
     /**
      * Центр
      */
-    Center : Point;
+    Center: Point;
     /**
      * Радиус
      */
@@ -1912,12 +1916,12 @@ declare interface Circle2D extends Elem2D{
      * True = против часовой стрелки
      * False = по часовой стрелке
      */
-	Dir: boolean;
+    Dir: boolean;
 }
 /**
  * 2D эллипс
  */
-declare interface Ellipse2D extends Elem2D{
+declare interface Ellipse2D extends Elem2D {
     /**
      * Центр
      */
@@ -2496,14 +2500,14 @@ declare interface BoxesMaker {
 
 }
 
-declare interface ImportExport{
+declare interface ImportExport {
     /**
      * Импорт-экспорт в SVG
      */
     SVG: ImportExportSVG;
 }
 
-declare interface ImportExportSVG{
+declare interface ImportExportSVG {
     /**
      * Качество аппроксимации кривых в линии [0-100]
      */
@@ -2587,7 +2591,7 @@ declare interface ScItemTovarList {
     /**
      * Является ли объект нестандартным
      */
-	IsNotStandart: boolean;
+    IsNotStandart: boolean;
 
 }
 
@@ -2980,6 +2984,16 @@ declare function FormatMatName(matName: string): string;
  * @param dir Новое направление взгляда
  */
 declare function OrientCamera(dir: Vector);
+/**
+ * Извлечь имя материала.
+ * @param material Полное имя материала
+ */
+declare function ExtractMatName(material: string): string;
+/**
+ * Извлечь код (артикул) материала.
+ * @param material Полное имя материала
+ */
+declare function ExtractMatCode(material: string): string;
 
 /**
  * Список элементов товара. Только для Салона
