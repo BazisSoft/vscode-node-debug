@@ -1436,7 +1436,19 @@ declare interface Object3 extends Object {
      * @param obj Предполагаемый родитель объекта
      */
     IsOwner(obj: Object3): boolean;
-
+    /**
+     * Назначить локальные позицию и поворот из другого объекта
+     * @param source
+     */
+    AssignTransform(source: Object3);
+    /**
+     * Идентификатор объекта
+     */
+    readonly UID: number;
+    /**
+     * Цвет линий
+     */
+    Color: number;
 }
 
 declare interface List3D extends Object3 {
@@ -2377,17 +2389,17 @@ declare interface InButtMaterial extends InControl {
      */
     Width: number;
     /**
-     *
+     * подрезать панель на толщину кромки
+     */
+    ClipPanel: boolean;
+    /**
+     * свес - насколько лента кромки должна быть длиннее торца детали
      */
     Overhung: number;
     /**
-     *
+     * припуск - насколько прифрезеровать торец перед кромкованием
      */
     Allowance: number;
-    /**
-     *
-     */
-    ClipPanel: boolean;
 
 }
 /**
@@ -2650,6 +2662,23 @@ declare interface ScItemTovarList {
      * Является ли объект нестандартным
      */
     IsNotStandart: boolean;
+
+}
+
+/**
+ * Доп. функции
+ */
+declare interface TSalonUtils{
+    /**
+     * Путь к папке с прикрепленными файлами
+     */
+    PathAttachments: string;
+
+    /**
+     * Получить полное имя прикрепленного файла
+     * @param fileName Имя файла
+     */
+    GetFullPathAttachment(fileName: string): string;
 
 }
 
@@ -3057,3 +3086,8 @@ declare function ExtractMatCode(material: string): string;
  * Список элементов товара. Только для Салона
  */
 declare var TovarItems: ScItemTovarList;
+
+/**
+ * Вспомогательные функции для работы с Салоном
+ */
+declare var SalonUtils: TSalonUtils;
