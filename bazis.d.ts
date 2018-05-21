@@ -1445,10 +1445,6 @@ declare interface Object3 extends Object {
      * Идентификатор объекта
      */
     readonly UID: number;
-    /**
-     * Цвет линий
-     */
-    Color: number;
 }
 
 declare interface List3D extends Object3 {
