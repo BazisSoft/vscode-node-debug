@@ -318,11 +318,15 @@ declare interface Action3D {
      * @param Fasteners список объектов для замены
      */
     ReplaceFurniture(Old: string[], New: InfFurniture[], Fasteners: Object3[]);
+    /**
+     * Вызов окна выбора материала из базы. Возвращает полное имя материала
+     */
+    ChooseMaterial(): string;
 }
 /**
  * Артикул модели
  */
-declare interface FurnArticle{
+declare interface FurnArticle {
     /**
      * Имя модели
      */
@@ -645,7 +649,7 @@ declare interface ScriptProperty {
 
 }
 
-declare interface RootProperties extends ScriptProperty{
+declare interface RootProperties extends ScriptProperty {
     /**
      * Создать объект с информацией о фурнитуре
      */
@@ -813,7 +817,7 @@ declare interface InspectorError {
 /**
  * Режим расстановки позиций
  */
-declare enum FurnPositionMode{
+declare enum FurnPositionMode {
     /**
      * Раставить позиции заново
      */
@@ -869,7 +873,7 @@ declare interface InspectorOptions {
 /**
  * Тип монтирования фурнитуры/фрагмента
  */
-declare enum DatumMode{
+declare enum DatumMode {
     /**
      * Отсутствует
      */
@@ -1432,7 +1436,15 @@ declare interface Object3 extends Object {
      * @param obj Предполагаемый родитель объекта
      */
     IsOwner(obj: Object3): boolean;
-
+    /**
+     * Назначить локальные позицию и поворот из другого объекта
+     * @param source
+     */
+    AssignTransform(source: Object3);
+    /**
+     * Идентификатор объекта
+     */
+    readonly UID: number;
 }
 
 declare interface List3D extends Object3 {
@@ -1583,7 +1595,7 @@ declare interface Trajectory extends Object3 {
 
 }
 
-declare interface AnimBlock extends List3D{
+declare interface AnimBlock extends List3D {
     /**
      * Тип анимации
      */
@@ -1740,6 +1752,30 @@ declare interface PanelButt {
      * Толщина кромки
      */
     Thickness: number;
+    /**
+     * ширина
+     */
+    Width: number;
+    /**
+     * подрезать панель на толщину кромки
+     */
+    ClipPanel: boolean;
+    /**
+     * свес - насколько лента кромки должна быть длиннее торца детали
+     */
+    Overhung: number;
+    /**
+     * припуск - насколько прифрезеровать торец перед кромкованием
+     */
+    Allowance: number;
+    /**
+     * номер отреза (для наклейки кромки на несколько торцев одним отрезом)
+     */
+    CutIndex: number;
+    /**
+     * профиль кромки
+     */
+    Profile: Contour2D;
 
 }
 
@@ -1813,7 +1849,7 @@ declare interface PanelCut {
 /**
  * Тип 2D элемента
  */
-declare enum ElementType{
+declare enum ElementType {
     /**
      * Неизвестный
      */
@@ -1842,26 +1878,60 @@ declare enum ElementType{
 /**
  * 2D-элемент
  */
-declare interface Elem2D{
+declare interface Elem2D {
     /**
      * Тип 2D элемента
      */
     ElType: ElementType;
+    /**
+     * Является ли элемент линией
+     */
     IsLine(): boolean;
+    /**
+     * Получить элемент как линию
+     */
     AsLine(): Line2D;
+    /**
+     * Является ли элемент окружностью
+     */
     IsCircle(): boolean;
+    /**
+     * Получить элемент как окружность
+     */
     AsCircle(): Circle2D;
+    /**
+     * Является ли элемент эллипсом
+     */
     IsEllipse(): boolean;
+    /**
+     * Получить элемент как эллипс
+     */
     AsEllipse(): Ellipse2D;
+    /**
+     * Является ли элемент дугой
+     */
     IsArc(): boolean;
+    /**
+     * Получить элемент как дугу
+     */
     AsArc(): Arc2D;
+    /**
+     * Является ли элемент списком элементов
+     */
     IsList(): boolean;
+    /**
+     * Получить элемент как список элементов
+     */
     AsList(): Contour2D;
+    /**
+     * Длина элемента
+     */
+    ObjLength(): number;
 }
 /**
  * 2D линия
  */
-declare interface Line2D extends Elem2D{
+declare interface Line2D extends Elem2D {
     /**
      * Начало
      */
@@ -1869,12 +1939,12 @@ declare interface Line2D extends Elem2D{
     /**
      * Конец
      */
-	Pos2: Point;
+    Pos2: Point;
 }
 /**
  * 2D дуга
  */
-declare interface Arc2D extends Elem2D{
+declare interface Arc2D extends Elem2D {
     /**
      * Начало
      */
@@ -1886,23 +1956,23 @@ declare interface Arc2D extends Elem2D{
     /**
      * Центр
      */
-	Center: Point;
+    Center: Point;
     /**
      * Направление
      * True = против часовой стрелки
      * False = по часовой стрелке
      */
-	ArcDir: boolean;
+    ArcDir: boolean;
 
 }
 /**
  * 2D окружность
  */
-declare interface Circle2D extends Elem2D{
+declare interface Circle2D extends Elem2D {
     /**
      * Центр
      */
-    Center : Point;
+    Center: Point;
     /**
      * Радиус
      */
@@ -1912,12 +1982,12 @@ declare interface Circle2D extends Elem2D{
      * True = против часовой стрелки
      * False = по часовой стрелке
      */
-	Dir: boolean;
+    Dir: boolean;
 }
 /**
  * 2D эллипс
  */
-declare interface Ellipse2D extends Elem2D{
+declare interface Ellipse2D extends Elem2D {
     /**
      * Центр
      */
@@ -2315,17 +2385,17 @@ declare interface InButtMaterial extends InControl {
      */
     Width: number;
     /**
-     *
+     * подрезать панель на толщину кромки
+     */
+    ClipPanel: boolean;
+    /**
+     * свес - насколько лента кромки должна быть длиннее торца детали
      */
     Overhung: number;
     /**
-     *
+     * припуск - насколько прифрезеровать торец перед кромкованием
      */
     Allowance: number;
-    /**
-     *
-     */
-    ClipPanel: boolean;
 
 }
 /**
@@ -2496,14 +2566,14 @@ declare interface BoxesMaker {
 
 }
 
-declare interface ImportExport{
+declare interface ImportExport {
     /**
      * Импорт-экспорт в SVG
      */
     SVG: ImportExportSVG;
 }
 
-declare interface ImportExportSVG{
+declare interface ImportExportSVG {
     /**
      * Качество аппроксимации кривых в линии [0-100]
      */
@@ -2587,7 +2657,24 @@ declare interface ScItemTovarList {
     /**
      * Является ли объект нестандартным
      */
-	IsNotStandart: boolean;
+    IsNotStandart: boolean;
+
+}
+
+/**
+ * Доп. функции
+ */
+declare interface TSalonUtils{
+    /**
+     * Путь к папке с прикрепленными файлами
+     */
+    PathAttachments: string;
+
+    /**
+     * Получить полное имя прикрепленного файла
+     * @param fileName Имя файла
+     */
+    GetFullPathAttachment(fileName: string): string;
 
 }
 
@@ -2980,8 +3067,23 @@ declare function FormatMatName(matName: string): string;
  * @param dir Новое направление взгляда
  */
 declare function OrientCamera(dir: Vector);
+/**
+ * Извлечь имя материала.
+ * @param material Полное имя материала
+ */
+declare function ExtractMatName(material: string): string;
+/**
+ * Извлечь код (артикул) материала.
+ * @param material Полное имя материала
+ */
+declare function ExtractMatCode(material: string): string;
 
 /**
  * Список элементов товара. Только для Салона
  */
 declare var TovarItems: ScItemTovarList;
+
+/**
+ * Вспомогательные функции для работы с Салоном
+ */
+declare var SalonUtils: TSalonUtils;
