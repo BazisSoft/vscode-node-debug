@@ -1,7 +1,7 @@
 {
   "name": "bazis-debug",
   "displayName": "Базис-Отладчик",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "publisher": "BazisSoft",
   "icon": "images/bazis-logo.png",
   "description": "%extension.description%",
