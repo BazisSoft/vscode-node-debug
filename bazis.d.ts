@@ -2256,6 +2256,166 @@ declare interface Geometry2D {
 
 }
 
+declare interface VectorGeometry3D {
+    /**
+     * Нормализовать вектор
+     * @param v
+     */
+    VectorNormalize(v: Vector): Vectorж
+    /**
+     * Сложение двух векторов. Эквивалентно v1 + v2
+     * @param v1
+     * @param v2
+     */
+    VectorAdd(v1: Vector, v2: Vector): Vector;
+    /**
+     * Вычитание двух векторов. Эквивалентно v1 - v2
+     * @param v1
+     * @param v2
+     */
+    VectorSub(v1: Vector, v2: Vector): Vector;
+    /**
+     * Умножение вектора на число
+     * @param v1
+     * @param a
+     */
+    VectorMul(v1: Vector, a: number): Vector;
+    /**
+     * Деление вектора на число
+     * @param v1
+     * @param a
+     */
+    VectorDiv(v1: Vector, a: number): Vector;
+    /**
+     * Скалярное произведение векторов
+     * @param v1
+     * @param v2
+     */
+    VectorDot(v1: Vector, v2: Vector): number;
+    /**
+     * Является ли вектор пустым
+     * @param v
+     */
+    VectorEmpty(v: Vector): boolean;
+    /**
+     * Векторное произведение векторов
+     * @param v1
+     * @param v2
+     */
+    VectorCross(v1: Vector, v2: Vector): Vector;
+    /**
+     * Создать копию точки
+     * @param v
+     */
+    VectorCopy(v: Vector): Vector;
+    /**
+     * Вычислить длину вектора
+     * @param v
+     */
+    VectorLength(v: Vector): number;
+    /**
+     * Инвертировать вектор
+     * @param v
+     */
+    VectorNegate(v: Vector): Vector;
+    /**
+     * Проверка векторов на равенство
+     * @param v1
+     * @param v2
+     */
+    VectorEqual(v1: Vector, v2: Vector): Vector;
+    /**
+     * Проверка векторов на сонаправленность
+     * @param v1
+     * @param v2
+     */
+    IsVectorCollinear(v1: Vector, v2: Vector): Vector;
+    /**
+     * Проекция точки на прямую
+     * @param point Исходная точка
+     * @param lineStart точка на прямой
+     * @param lineDir вектор направления прямой
+     */
+    PointLineClosestPoint(point: Vector, lineStart: Vector, lineDir: Vector): Vector;
+    /**
+     * Расстояние от точки до прямой
+     * @param point Исходная точка
+     * @param lineStart точка на прямой
+     * @param lineDir вектор направления прямой
+     */
+    PointLineDistance(point: Vector, lineStart: Vector, lineDir: Vector): number;
+}
+
+/**
+ * Информация о простом соединении двух объектов
+ */
+declare interface ScriptSimpleConnection {
+    /**
+     * Установить фурнитуру на стык двух панелей
+     * @param Furn Объект, содержащий информацию о фурнитуре
+     * @param mountPoint Точка установки фурнитуры
+     */
+    Mount(Furn: InfFurniture | InFurniture, mountPoint: Vector): Object3;
+    /**
+     * Поменять начальную и конечную точки стыка
+     */
+    InvertPositions();
+    /**
+     * Изменить пласть установки (установить обратную сторону стыка)
+     */
+    ChangeSide();
+    /**
+     * Первая панель
+     */
+    Panel1: Panel;
+    /**
+     * Вторая панель
+     */
+    Panel2: Panel;
+    /**
+     * Начало стыка
+     */
+    PointStart: Vector;
+    /**
+     * Конец стыка
+     */
+    PointEnd: Vector;
+    /**
+     * Направление длины стыка (нормализованный вектор от начала до конца стыка)
+     */
+    Dir: Vector;
+    /**
+     * Направление ширины стыка (Нормализованный вектор от текущей до противоположной стороны стыка)
+     */
+    WidthDir: Vector;
+}
+
+/**
+ * Информация об общем соединении двух объектов
+ */
+declare interface ScriptCommonConnection {
+    /**
+     * Получить элемент по индексу
+     */
+    [i: number]: ScriptSimpleConnection;
+    /**
+     * Получить элемент по индексу
+     */
+    Items: Array<ScriptSimpleConnection>;
+    /**
+     * Количество элементов
+     */
+    Count: number;
+    /**
+     * Первая панель, указанная при создании объекта
+     */
+    Panel1: Panel;
+    /**
+     * Вторая панель, указанная при создании объекта
+     */
+    Panel2: Panel;
+}
+
 /**
  * Элемент на динамической панели
  */
@@ -2664,7 +2824,7 @@ declare interface ScItemTovarList {
 /**
  * Доп. функции
  */
-declare interface TSalonUtils{
+declare interface TSalonUtils {
     /**
      * Путь к папке с прикрепленными файлами
      */
@@ -2727,6 +2887,13 @@ declare function NewForm(caption: string): ScriptForm;
 declare function NewParamFastenerDB(): ScriptParamFastenerDB;
 
 /**
+ * Создать информацию о соединении двух панелей
+ * @param p1
+ * @param p2
+ */
+declare function NewScriptPanelsConnection(p1: Panel, p2: Panel): ScriptCommonConnection;
+
+/**
  * Нормаль X
  */
 declare var AxisX: Vector;
@@ -2770,6 +2937,11 @@ declare var Model: Model3D;
  * Вспомогательные геометрические функции
  */
 declare var geometry: Geometry2D;
+
+/**
+ * Вспомогательные функции для работы с векторами
+ */
+declare var vectorGeometry: VectorGeometry3D;
 
 /**
  * Активный скрипт
