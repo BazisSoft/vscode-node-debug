@@ -6,3 +6,4 @@
 npm-debug.log
 package.nls.*.json
 bazis-debug-*.vsix
+/*.out
